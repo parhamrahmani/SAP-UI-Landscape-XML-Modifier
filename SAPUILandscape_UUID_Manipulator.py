@@ -2,7 +2,6 @@
 # as service id. I want to regenerate uuids of both and update service id of Item accordingly.
 import xml.etree.ElementTree as ET
 import uuid
-import random
 
 # Prompt the user for the XML file path
 xml_file_path = input("Enter the XML file path: ")
@@ -38,10 +37,9 @@ for item in root.findall(".//Item"):
     item.set('uuid', str(uuid.uuid4()))
 
 # Save the modified XML file with a unique name
-random_number = str(random.randint(10000000, 99999999))
-output_file_name = 'C:/Users/PR106797/Downloads/modified_xml_' + random_number + '.xml'
+input_output_path = input("Enter the output path for modified XML file: ")
+input_modified_name = input("Enter the name for your output file: ")
+output_file_name = input_output_path + input_modified_name + '.xml'
 tree.write(output_file_name, encoding='utf-8', xml_declaration=True)
 
 print("Modified XML file saved as:", output_file_name)
-
-
