@@ -1,6 +1,3 @@
-# Ignore HTML files
-*.html linguist-vendored
-
-# Set Python files to be recognized as Python
 *.py linguist-language=Python
+
 
