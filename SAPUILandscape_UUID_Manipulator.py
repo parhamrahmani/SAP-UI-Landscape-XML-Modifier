@@ -3,6 +3,11 @@
 import xml.etree.ElementTree as ET
 import uuid
 import os
+import colorama
+from colorama import Fore, Style
+
+# Initialize colorama
+colorama.init()
 
 # Description of the program
 description = """
@@ -19,11 +24,14 @@ print(description)
 
 # Prompt the user for the XML file path
 while True:
-    xml_file_path = input("Enter the XML file path: ").strip('"')
+    xml_file_path = input(Fore.YELLOW + "📂 Enter the path to the XML file: " + Style.RESET_ALL)
+
+    # Remove double quotes from input, if present
+    xml_file_path = xml_file_path.strip('"')
 
     # Validate XML file path
     if not os.path.isfile(xml_file_path):
-        print("Error: Invalid XML file path. Please try again.")
+        print(Fore.RED + "❌ Error: Invalid XML file path. Please try again." + Style.RESET_ALL)
     else:
         break
 
@@ -106,5 +114,7 @@ try:
 
 except Exception as e:
     print("An error occurred while processing the XML file:", str(e))
+    input("Press Enter to exit...")
 
-
+# Cleanup colorama
+colorama.deinit()
