@@ -61,9 +61,11 @@ def regenerate_service_uuids(root):
         service_mapping[old_uuid] = new_uuid
         service.set('uuid', new_uuid)
 
-        for item in root.findall(".//Item[@serviceid='" + old_uuid + "']"):
-            item.set('serviceid', new_uuid)
-
+    for item in root.findall(".//Item"):
+        service_id = item.get('serviceid')
+        if service_id in service_mapping:
+            new_service_id = service_mapping[service_id]
+            item.set('serviceid', new_service_id)
 
 # Function to remove includes with URLs containing "SAPUILandscapeGlobal.xml"
 def remove_global_includes(root):
