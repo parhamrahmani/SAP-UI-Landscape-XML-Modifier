@@ -51,21 +51,29 @@ def regenerate_workspace_uuids(workspaces):
             workspace.set('name', new_workspace_name)
 
 
-# Function to regenerate UUIDs for services and update service IDs in items
+# Function to regenerate UUIDs for services and items
 def regenerate_service_uuids(root):
-    service_mapping = {}
+    uuid_mapping = {}
 
+    # Regenerate UUIDs for services
     for service in root.findall(".//Service"):
         old_uuid = service.get('uuid')
         new_uuid = str(uuid.uuid4())
-        service_mapping[old_uuid] = new_uuid
+        uuid_mapping[old_uuid] = new_uuid
         service.set('uuid', new_uuid)
 
+    # Regenerate UUIDs for items and update service IDs
     for item in root.findall(".//Item"):
+        item_uuid = item.get('uuid')
+        new_item_uuid = str(uuid.uuid4())
+        uuid_mapping[item_uuid] = new_item_uuid
+        item.set('uuid', new_item_uuid)
+
         service_id = item.get('serviceid')
-        if service_id in service_mapping:
-            new_service_id = service_mapping[service_id]
+        if service_id in uuid_mapping:
+            new_service_id = uuid_mapping[service_id]
             item.set('serviceid', new_service_id)
+
 
 # Function to remove includes with URLs containing "SAPUILandscapeGlobal.xml"
 def remove_global_includes(root):
