@@ -6,7 +6,6 @@ import uuid
 import pandas as pd
 
 
-
 # Function to clear the console screen
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -105,7 +104,7 @@ def generate_excel_file(xml_file_path):
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
     # Create a dictionary to store the data
-    data = {
+    data_sheet_1 = {
         'Node': [],
         'System Name': [],
         'System Description': [],
@@ -148,18 +147,52 @@ def generate_excel_file(xml_file_path):
                             router_address = router.get('router')
 
                     # Add the data to the dictionary
-                    data['Node'].append(node_name)
-                    data['System Name'].append(service_name)
-                    data['System Description'].append(service_description)
-                    data['System Id'].append(service_sid)
-                    data['System Type'].append(service_type)
-                    data['System Client'].append(service_client)
-                    data['System URL'].append(service_url)
-                    data['System Server'].append(service_server)
-                    data['Router Address'].append(router_address)
+                    data_sheet_1['Node'].append(node_name)
+                    data_sheet_1['System Name'].append(service_name)
+                    data_sheet_1['System Description'].append(service_description)
+                    data_sheet_1['System Id'].append(service_sid)
+                    data_sheet_1['System Type'].append(service_type)
+                    data_sheet_1['System Client'].append(service_client)
+                    data_sheet_1['System URL'].append(service_url)
+                    data_sheet_1['System Server'].append(service_server)
+                    data_sheet_1['Router Address'].append(router_address)
+
+    # Find items that are not within any nodes
+    for item in root.findall('.//Item'):
+        # Get the item UUID
+        service_id = item.get('serviceid')
+
+        for service in root.findall('.//Service'):
+            service_uuid = service.get('uuid')
+            if service_id == service_uuid:
+                service_name_2 = service.get('name')
+                service_desc = service.get('description')
+                service_sid_2 = service.get('systemid')
+                service_type_2 = service.get('type')
+                service_client_2 = service.get('client')
+                service_url_2 = service.get('url')
+                service_server_2 = service.get('server')
+
+                # Find the router based on the router ID
+                for router in root.findall('.//Router'):
+                    router_uuid = router.get('uuid')
+                    service_router = service.get('routerid')
+                    if service_router == router_uuid:
+                        router_address = router.get('router')
+
+                        # Add the data to the dictionary
+                        data_sheet_1['Node'].append(' ')
+                        data_sheet_1['System Id'].append(service_sid_2)
+                        data_sheet_1['System Name'].append(service_name_2)
+                        data_sheet_1['System Description'].append(service_desc)
+                        data_sheet_1['System Type'].append(service_type_2)
+                        data_sheet_1['System Client'].append(service_client_2)
+                        data_sheet_1['System URL'].append(service_url_2)
+                        data_sheet_1['System Server'].append(service_server_2)
+                        data_sheet_1['Router Address'].append(router_address)
 
     # Create a DataFrame from the data dictionary
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(data_sheet_1)
 
     # Save the DataFrame to Excel
     output_file_path = xml_file_path.replace('.xml', '.xlsx')
@@ -168,7 +201,6 @@ def generate_excel_file(xml_file_path):
     return output_file_path
 
 
-# Main program
 def main():
     display_header()
     print("SAP UI Landscape XML Modifier")
@@ -216,6 +248,10 @@ def main():
 
         display_success(f"Modified XML file saved as: {output_file}")
 
+        # Process the XML file and generate Excel file
+        output_file_path = generate_excel_file(output_file)
+        print("Excel file generated:", output_file_path)
+
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
 
@@ -225,6 +261,3 @@ def main():
 # Start the program
 if __name__ == "__main__":
     main()
-
-
-
