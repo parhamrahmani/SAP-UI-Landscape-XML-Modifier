@@ -3,6 +3,8 @@
 import os
 import xml.etree.ElementTree as ET
 import uuid
+import pandas as pd
+
 
 
 # Function to clear the console screen
@@ -86,7 +88,8 @@ def remove_global_includes(root):
             filtered_includes.append(include)
 
     if len(filtered_includes) < len(includes):
-        prompt_message = "This XML file includes SAPUILandscapeGlobal.xml. In order to make this file into a central file, this inclusion has to be deleted. Do you want to delete it? (y/n): "
+        prompt_message = "This XML file includes SAPUILandscapeGlobal.xml. In order to make this file " \
+                         "into a central file, this inclusion has to be deleted. Do you want to delete it? (y/n): "
         remove_includes = get_user_input(prompt_message).lower() == "y"
 
         if remove_includes:
@@ -96,6 +99,73 @@ def remove_global_includes(root):
             return False
     else:
         return False
+
+
+def generate_excel_file(xml_file_path):
+    tree = ET.parse(xml_file_path)
+    root = tree.getroot()
+    # Create a dictionary to store the data
+    data = {
+        'Node': [],
+        'System Name': [],
+        'System Description': [],
+        'System Id': [],
+        'System Type': [],
+        'System Client': [],
+        'System URL': [],
+        'System Server': [],
+        'Router Address': []
+    }
+
+    # Iterate over the nodes
+    for node in root.findall('.//Node'):
+        node_name = node.get('name')
+
+        # Iterate over the items in the node
+        for item in node.findall('.//Item'):
+            service_id = item.get('serviceid')
+
+            # Iterate over Services
+            for service in root.findall('.//Service'):
+                service_uuid = service.get('uuid')
+                if service_uuid == service_id:
+                    service_name = service.get('name')
+                    service_description = service.get('description')
+                    service_sid = service.get('systemid')
+                    service_type = service.get('type')
+                    service_client = service.get('client')
+                    service_url = service.get('url')
+                    service_server = service.get('server')
+
+                    # Initialize router_address with an empty string
+                    router_address = ''
+
+                    # Find the router based on the router ID
+                    for router in root.findall('.//Router'):
+                        router_uuid = router.get('uuid')
+                        service_router = service.get('routerid')
+                        if service_router == router_uuid:
+                            router_address = router.get('router')
+
+                    # Add the data to the dictionary
+                    data['Node'].append(node_name)
+                    data['System Name'].append(service_name)
+                    data['System Description'].append(service_description)
+                    data['System Id'].append(service_sid)
+                    data['System Type'].append(service_type)
+                    data['System Client'].append(service_client)
+                    data['System URL'].append(service_url)
+                    data['System Server'].append(service_server)
+                    data['Router Address'].append(router_address)
+
+    # Create a DataFrame from the data dictionary
+    df = pd.DataFrame(data)
+
+    # Save the DataFrame to Excel
+    output_file_path = xml_file_path.replace('.xml', '.xlsx')
+    df.to_excel(output_file_path, index=False)
+
+    return output_file_path
 
 
 # Main program
