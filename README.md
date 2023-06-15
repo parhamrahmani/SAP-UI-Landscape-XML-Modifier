@@ -1,5 +1,5 @@
 
-## SAP UI Landscape XML Modifier
+## SAP UI Landscape XML Modifier v0.1.0-beta
 
 The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP UI Landscape XML "Local" files into "Centralized/Global" landscape files. It provides various functionalities to regenerate UUIDs for workspaces, nodes, services, and items, as well as the option to remove includes and rename workspaces. This programme is useful for customising and managing SAP UI Landscape XML files according to specific requirements.
 
