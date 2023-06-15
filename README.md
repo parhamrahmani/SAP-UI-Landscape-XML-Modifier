@@ -40,24 +40,24 @@ choco install -y python3
  
  
  *First, ensure you have Python installed*
-```bash
+```
 py --version
 ```
 *Then ensure you have pip installed*
-```bash
+```
 py -m ensurepip
 ```
 *Install pandas*
-```bash
+```
 py -m pip install pandas
 ```
 *Install openpyxl*
-```bash
+```
 py -m pip install openpyxl
 ```
 - After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *SAPUILandscape_UUID_Manipulator.py*.
 You should see this when run correctly:
-```bash
+```
 =============================================
      SAP UI Landscape XML Modifier
 =============================================
@@ -73,7 +73,7 @@ in order to make them usable as central files.
 
 - After seeing this message :
 
-```bash
+```
 >> Enter the path to the XML file: 
 ```
 Enter the directory of the XML configuration file you want to modify. Use *Copy as Path* option in Windows. Make sure to use a copy of your main local configuration file.
@@ -85,7 +85,7 @@ Example: __"C:\Users\User\SAPUILandscapeCopy.xml"__
 
 Example: use **y** or **n** as answers.
 
-```bash
+```
 List of Workspaces:
 1. Local
 >> Do you want to regenerate UUIDs for all workspaces? (y/n): 
@@ -94,14 +94,14 @@ List of Workspaces:
 
 Example: write a new name for your workspace like **central**
 
-```bash
+```
 >> Enter the new name for workspace 'Local':
 ```
 - In this stage, the programme checks if there are any codes that include **SAPUILandscapeGlobal.xml"**. This section was intended to be in local config files to also include the global file, it is recommended to delete this, because in a central file you won't need to reference the file itself again. This may cause duplications, errors, or even cause SAP Logon to crash. 
 
 Example: You will see this message. Use **y** or **n** as answers.
 
-```bash
+```
 >> This XML file includes SAPUILandscapeGlobal.xml. In order to make this file into a central file, this inclusion has to be deleted. Do you want to delete it? (y/n):
 ```
 
@@ -112,14 +112,14 @@ Example:
 *Correct* -> C:\Users\User\Documents  
 *Incorrect* -> "C:\Users\User\Documents"
 
-```bash
+```
 >> Enter the output path for the modified XML file:
 ```
 
 - Now enter the name of your output file. In the example, I used 'Mod' as the new file name. After this, you will get a message that reports if the new modified XML file was successfully exported and modified. An excel file will also be reported that lists all of your systems, and it can be very useful to observe what systems you have in your configuration files and if the modified configuration file contains all of them.
 
 *In the end, press Enter to exit the programme.* 
-```bash
+```
 >> Enter the name for your output file:  Mod
 SUCCESS: Modified XML file saved as: C:\Users\User\Documents\Mod.xml
 Excel file generated: C:\Users\User\Documents\Mod.xlsx
