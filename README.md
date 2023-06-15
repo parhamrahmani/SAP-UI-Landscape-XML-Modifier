@@ -104,7 +104,9 @@ Example: write a new name for your workspace like **central**
 Example: You will see this message. Use **y** or **n** as answers.
 
 ```
->> This XML file includes SAPUILandscapeGlobal.xml. In order to make this file into a central file, this inclusion has to be deleted. Do you want to delete it? (y/n):
+>> This XML file includes SAPUILandscapeGlobal.xml. 
+In order to make this file into a central file,
+this inclusion has to be deleted. Do you want to delete it? (y/n):
 ```
 
 - Now enter the output path. Make sure to **NOT** use quotation marks ("") while giving the answer.
