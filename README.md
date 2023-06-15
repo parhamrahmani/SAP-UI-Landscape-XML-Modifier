@@ -27,7 +27,8 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 - Make sure you have appropriate access rights to read and modify the XML file. Otherwise, the programme may encounter permission errors.
 
 - Make sure to view the XML file after usage in an XML editor and check if the data is correct, before referencing it to SAP. For example, check if there are still any include sections that include any other global files that may cause duplications. Making a central XML configuration file can't be done 100% automatically.
-- 
+
+
 ## Installation
 
 
