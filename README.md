@@ -38,6 +38,7 @@ choco install -y python3
 
 - This programme needs some other packages that need to be installed on your PC. To install this. Open PowerShell or cmd **as an administrator** and run this command.
  
+ 
  *First, ensure you have Python installed*
 ```bash
 py --version
