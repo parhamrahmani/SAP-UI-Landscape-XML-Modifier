@@ -8,15 +8,15 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 
 ## Features
 
-- Regenerate UUIDs: The programme allows you to regenerate UUIDs for workspaces, nodes, services, and items. This prevents errors and possible interferences between local and the global file.
+- ***Regenerate UUIDs:*** The programme allows you to regenerate UUIDs for workspaces, nodes, services, and items. This prevents errors and possible interferences between local and the global file.
 
-- Rename Workspaces: You can rename workspaces within the XML file. This feature is particularly useful when you want to make the XML file usable as a central file. (Renaming the "Local" workspace is a necessity for making a global config file)
+- ***Rename Workspaces:*** You can rename workspaces within the XML file. This feature is particularly useful when you want to make the XML file usable as a central file. (Renaming the "Local" workspace is a necessity for making a global config file)
 
-- Update Service IDs: The programme updates the service IDs of items based on the regenerated UUIDs of services. This ensures proper referencing and consistency within the XML file.
+- ***Update Service IDs:*** The programme updates the service IDs of items based on the regenerated UUIDs of services. This ensures proper referencing and consistency within the XML file.
 
-- Remove SAPUILandscapeGlobal Includes: If the XML file includes "SAPUILandscapeGlobal.xml", the programme provides an option to remove this include. This is necessary to make the XML file a central file that can be used independently.
+- ***Remove SAPUILandscapeGlobal Includes:*** If the XML file includes "SAPUILandscapeGlobal.xml", the programme provides an option to remove this include. This is necessary to make the XML file a central file that can be used independently.
 
-- Exporting an Excel file of all SAP systems Information exported is node names, system names, SID, system types, system URL (for FIORI or NWBC types) or server address, router address, and marking existing duplicate systems in the configuration file.
+- ***Exporting an Excel file of all SAP systems:*** Information exported is node names, system names, SID, system types, system URL (for FIORI or NWBC types) or server address, router address, and marking existing duplicate systems in the configuration file.
 
 ## Warnings
 
@@ -27,6 +27,7 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 - Make sure you have appropriate access rights to read and modify the XML file. Otherwise, the programme may encounter permission errors.
 
 - Make sure to view the XML file after usage in an XML editor and check if the data is correct, before referencing it to SAP. For example, check if there are still any include sections that include any other global files that may cause duplications. Making a central XML configuration file can't be done 100% automatically.
+- 
 ## Installation
 
 
