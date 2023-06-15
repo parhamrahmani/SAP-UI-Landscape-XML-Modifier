@@ -32,7 +32,7 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 
 - Make sure you have Python installed on your system. The programme utilises Python's built-in xml.etree.ElementTree module, which is commonly available. Download and install Python from their [Website](https://www.python.org/?downloads) or use package managers such as *Chocolatey* to install it.
 
-```bash
+```
 choco install -y python3
 ```
 
