@@ -2,7 +2,8 @@ import time
 from utils.console import *
 from utils.excel_utils import *
 from utils.xml_utils import *
-
+import xml.etree.ElementTree as ET
+import pandas as pd
 
 def main():
     display_header()
@@ -43,8 +44,10 @@ def main():
         output_path = get_user_input("Enter the output path for the modified XML file: ")
         output_name = get_user_input("Enter the name for your output file: ")
         output_file = os.path.join(output_path, output_name + '.xml')
-        tree.write(output_file, encoding='utf-8', xml_declaration=True)
+        for elem in root.iter('address'):
+            elem.text = output_file
 
+        tree.write(output_file)
         display_success(f"Modified XML file saved as: {output_file}")
 
         # Process the XML file and generate Excel file

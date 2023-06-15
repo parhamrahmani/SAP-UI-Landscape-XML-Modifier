@@ -24,7 +24,10 @@ def display_wl_msg():
 
 # Function to display prompts and get user input
 def get_user_input(prompt):
-    return input(f">> {prompt} ")
+    user_input = input(prompt)
+    user_input = user_input.strip(' "\'')  # Remove spaces, double quotes, and single quotes
+    return user_input
+
 
 
 # Function to display error messages
@@ -39,5 +42,6 @@ def display_success(message):
 
 # Function to remove double quotes from a string
 def remove_quotes(string):
-    return string.strip('"')
-
+    if string.startswith('"') and string.endswith('"'):
+        return string[1:-1]
+    return string

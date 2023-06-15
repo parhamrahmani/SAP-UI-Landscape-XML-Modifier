@@ -1,13 +1,14 @@
 import xml.etree.ElementTree as ET
 import pandas as pd
 
-
-
 def generate_excel_file(xml_file_path):
+
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
+
     # Create a dictionary to store the data
     data_sheet_1 = {
+
         'Node': [],
         'System Name': [],
         'System Description': [],
@@ -19,7 +20,6 @@ def generate_excel_file(xml_file_path):
         'Router Address': [],
         'Is Duplicate': []
     }
-
     # Iterate over the nodes
     for node in root.findall('.//Node'):
         node_name = node.get('name')
@@ -106,6 +106,7 @@ def generate_excel_file(xml_file_path):
     # Save the DataFrame to Excel
     output_file_path = xml_file_path.replace('.xml', '.xlsx')
     df.to_excel(output_file_path, index=False)
+    print("Data Dictionary:", data_sheet_1)
 
     return output_file_path
 
