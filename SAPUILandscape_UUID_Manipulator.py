@@ -5,6 +5,7 @@ from utils.xml_utils import *
 import xml.etree.ElementTree as ET
 import pandas as pd
 
+
 def main():
     display_header()
     display_wl_msg()
@@ -30,7 +31,7 @@ def main():
 
         regenerate_workspace_uuids(workspaces)
 
-        #regenerating
+        # regenerating
         for node in root.findall(".//Node"):
             node.set('uuid', str(uuid.uuid4()))
 
@@ -60,7 +61,6 @@ def main():
 
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
-
 
 
 # Start the program

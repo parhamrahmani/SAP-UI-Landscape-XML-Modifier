@@ -1,15 +1,16 @@
 import xml.etree.ElementTree as ET
 import pandas as pd
 
-def generate_excel_file(xml_file_path):
 
+def generate_excel_file(xml_file_path):
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
 
     # Create a dictionary to store the data
     data_sheet_1 = {
-
-        'Node': [],
+        'Workspace': [],
+        'Parent Node': [],
+        'Child Node': [],
         'System Name': [],
         'System Description': [],
         'System Id': [],
@@ -20,79 +21,130 @@ def generate_excel_file(xml_file_path):
         'Router Address': [],
         'Is Duplicate': []
     }
-    # Iterate over the nodes
-    for node in root.findall('.//Node'):
-        node_name = node.get('name')
+    # Get all items
+    all_items = root.findall('.//Item')
+    node_items = root.findall('.//Node/Item')
+    child_node_items = root.findall('.//Node/Node/Item')
+    workspaces = root.findall('.//Workspace')
+    services = root.findall('.//Service')
+    routers = root.findall('.//Router')
 
-        # Iterate over the items in the node
-        for item_node in node.findall('.//Item'):
-            service_id = item_node.get('serviceid')
-
-            # Iterate over Services
-            for service in root.findall('.//Service'):
-                service_uuid = service.get('uuid')
-                service_type = service.get('type')
-                if service_uuid == service_id and service_type == 'SAPGUI':
-                    service_name = service.get('name')
-                    service_description = service.get('description')
-                    service_sid = service.get('systemid')
-                    service_client = service.get('client')
-                    service_url = service.get('url')
-                    service_server = service.get('server')
-
-                    # Initialize router_address with an empty string
-                    router_address = ''
-
-                    # Find the router based on the router ID
-                    for router in root.findall('.//Router'):
-                        router_uuid = router.get('uuid')
-                        service_router = service.get('routerid')
-                        if service_router == router_uuid:
-                            router_address = router.get('router')
-
-                    # Add the data to the dictionary
-                    data_sheet_1['Node'].append(node_name)
-                    data_sheet_1['System Name'].append(service_name)
-                    data_sheet_1['System Description'].append(service_description)
-                    data_sheet_1['System Id'].append(service_sid)
-                    data_sheet_1['System Type'].append(service_type)
-                    data_sheet_1['System Client'].append(service_client)
-                    data_sheet_1['System URL'].append(service_url)
-                    data_sheet_1['System Server'].append(service_server)
-                    data_sheet_1['Router Address'].append(router_address)
-                    data_sheet_1['Is Duplicate'].append('')
-
-    for service in root.findall('.//Service'):
-        servicetype = service.get('type')
-        if servicetype != 'SAPGUI':
-            servicename = service.get('name')
-            servicedescription = service.get('description')
-            servicesid = service.get('systemid')
-            serviceclient = service.get('client')
-            serviceurl = service.get('url')
-            serviceserver = service.get('server')
-
-            # Initialize router_address with an empty string
-            routeraddress = ''
-
-            # Find the router based on the router ID
-            for router in root.findall('.//Router'):
-                router_uuid = router.get('uuid')
-                service_router = service.get('routerid')
-                if service_router == router_uuid:
-                    routeraddress = router.get('router')
-
-            # Add the data to the dictionary
-            data_sheet_1['Node'].append('*Not included in a node*')
-            data_sheet_1['System Name'].append(servicename)
-            data_sheet_1['System Description'].append(servicedescription)
-            data_sheet_1['System Id'].append(servicesid)
-            data_sheet_1['System Type'].append(servicetype)
-            data_sheet_1['System Client'].append(serviceclient)
-            data_sheet_1['System URL'].append(serviceurl)
-            data_sheet_1['System Server'].append(serviceserver)
-            data_sheet_1['Router Address'].append(routeraddress)
-            data_sheet_1['Is Duplicate'].append('')
+    # Iterate over the nodes that don't have child nodes
+    for workspace in workspaces:
+        workspace_name = workspace.get('name')
+        for node in workspace.get('.//Node'):
+            parent_node_name = node.get('name')
+            for item_node in node.findall('.//Item'):
+                if item_node not in child_node_items:
+                    service_id = item_node.get('serviceid')
+                    for service in services:
+                        service_uuid = service.get('uuid')
+                        if service_uuid == service_id:
+                            service_type = service.get('type')
+                            service_name = service.get('name')
+                            service_description = service.get('description')
+                            service_sid = service.get('systemid')
+                            service_client = service.get('client')
+                            service_url = service.get('url')
+                            service_server = service.get('server')
+                            # Initialize router_address with an empty string
+                            router_address = ''
+                            # Find the router based on the router ID
+                            for router in routers:
+                                router_uuid = router.get('uuid')
+                                service_router = service.get('routerid')
+                                if service_router == router_uuid:
+                                    router_address = router.get('router')
+                            # Add the data to the dictionary
+                            data_sheet_1['Workspace'].append(workspace_name)
+                            data_sheet_1['Parent Node'].append(parent_node_name)
+                            data_sheet_1['Child Node'].append('*No Child Node*')
+                            data_sheet_1['System Name'].append(service_name)
+                            data_sheet_1['System Description'].append(service_description)
+                            data_sheet_1['System Id'].append(service_sid)
+                            data_sheet_1['System Type'].append(service_type)
+                            data_sheet_1['System Client'].append(service_client)
+                            data_sheet_1['System URL'].append(service_url)
+                            data_sheet_1['System Server'].append(service_server)
+                            data_sheet_1['Router Address'].append(router_address)
+                            data_sheet_1['Is Duplicate'].append('')
+    # Iterate over the nodes that have child nodes
+    for workspace in workspaces:
+        workspace_name = workspace.get('name')
+        for node in workspace.get('.//Node'):
+            parent_node_name = node.get('name')
+            for child_node in node.findall('.//Node'):
+                child_node_name = child_node.get('name')
+                for child_item_node in child_node.findall('.//Item'):
+                    service_id = child_item_node.get('serviceid')
+                    for service in services:
+                        service_uuid = service.get('uuid')
+                        if service_uuid == service_id:
+                            service_type = service.get('type')
+                            service_name = service.get('name')
+                            service_description = service.get('description')
+                            service_sid = service.get('systemid')
+                            service_client = service.get('client')
+                            service_url = service.get('url')
+                            service_server = service.get('server')
+                            # Initialize router_address with an empty string
+                            router_address = ''
+                            # Find the router based on the router ID
+                            for router in routers:
+                                router_uuid = router.get('uuid')
+                                service_router = service.get('routerid')
+                                if service_router == router_uuid:
+                                    router_address = router.get('router')
+                            # Add the data to the dictionary
+                            data_sheet_1['Workspace'].append(workspace_name)
+                            data_sheet_1['Parent Node'].append(parent_node_name)
+                            data_sheet_1['Child Node'].append(child_node_name)
+                            data_sheet_1['System Name'].append(service_name)
+                            data_sheet_1['System Description'].append(service_description)
+                            data_sheet_1['System Id'].append(service_sid)
+                            data_sheet_1['System Type'].append(service_type)
+                            data_sheet_1['System Client'].append(service_client)
+                            data_sheet_1['System URL'].append(service_url)
+                            data_sheet_1['System Server'].append(service_server)
+                            data_sheet_1['Router Address'].append(router_address)
+                            data_sheet_1['Is Duplicate'].append('')
+    # Iterate over items that are not in nodes
+    for workspace in workspaces:
+        workspace_name = workspace.get('name')
+        for item in all_items:
+            if item not in node_items and item not in child_node_items:
+                service_id = item.get('serviceid')
+                for service in services:
+                    service_uuid = service.get('uuid')
+                    if service_uuid == service_id:
+                        service_type = service.get('type')
+                        service_name = service.get('name')
+                        service_description = service.get('description')
+                        service_sid = service.get('systemid')
+                        service_client = service.get('client')
+                        service_url = service.get('url')
+                        service_server = service.get('server')
+                        # Initialize router_address with an empty string
+                        router_address = ''
+                        # Find the router based on the router ID
+                        for router in routers:
+                            router_uuid = router.get('uuid')
+                            service_router = service.get('routerid')
+                            if service_router == router_uuid:
+                                router_address = router.get('router')
+                        # Add the data to the dictionary
+                        data_sheet_1['Workspace'].append(workspace_name)
+                        data_sheet_1['Parent Node'].append('*No Parent Node*')
+                        data_sheet_1['Child Node'].append('*No Child Node*')
+                        data_sheet_1['System Name'].append(service_name)
+                        data_sheet_1['System Description'].append(service_description)
+                        data_sheet_1['System Id'].append(service_sid)
+                        data_sheet_1['System Type'].append(service_type)
+                        data_sheet_1['System Client'].append(service_client)
+                        data_sheet_1['System URL'].append(service_url)
+                        data_sheet_1['System Server'].append(service_server)
+                        data_sheet_1['Router Address'].append(router_address)
+                        data_sheet_1['Is Duplicate'].append('')
 
     # Create a DataFrame from the data dictionary
     df = pd.DataFrame(data_sheet_1)
@@ -109,4 +161,3 @@ def generate_excel_file(xml_file_path):
     print("Data Dictionary:", data_sheet_1)
 
     return output_file_path
-
