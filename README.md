@@ -20,7 +20,43 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 
 ## Warnings
 
-- Always create a backup of your original XML file before running the programme. This ensures that you have a copy of the unmodified file in case any issues arise during the modification process.
+- This programme is still in beta and may contain bugs. Please report any bugs or issues you encounter.
+- Please make sure you have the standard hierarchy of data in your XML file. Based on [SAP's documentation](https://www.bing.com/ck/a?!&&p=e846a0c56aad6c19JmltdHM9MTY4Njg3MzYwMCZpZ3VpZD0yMWE5YzQxMS05MzNmLTYzOWQtMGRkMy1kNmY5OTIwNzYyZDYmaW5zaWQ9NTE5Nw&ptn=3&hsh=3&fclid=21a9c411-933f-639d-0dd3-d6f9920762d6&psq=sap+ui+landscape+file+configuration+&u=a1aHR0cHM6Ly9oZWxwLnNhcC5jb20vZG9jL2RmNWY3NTJlYjQwMDRiMmM5ZWNhYjc2OWM5ZjcxMjA4Lzc2MC4wMS9lbi1VUy9zYXBfdWlfbGFuZHNjYXBlX2NvbmZfZ3VpZGUucGRm&ntb=1), the hierarchy is as follows:
+```
+<Landscape>
+   <Workspaces>
+       <Workspace>
+               <Node>
+                    <Item>
+               </Node>
+               <Item>
+       </Workspace>   
+   </Workspaces>
+   <Services>
+           <Service>
+                  <Memo></Memo>
+           </Service>
+   </Services>
+   <Messageservers>
+           <Messageserver>
+   </Messageservers> 
+   <Routers>
+           <Router>
+   </Routers>
+   <Includes>
+            <Include>
+   </Includes>
+   <Configuration>
+       <Parameter> 
+   </Configuration> 
+</Landscape>
+```
+
+The programme may not work properly if the hierarchy is not as expected.
+
+
+- This programme is not intended to be used for SAP UI Landscape XML files that are already in use. It is recommended to
+use this programme on a copy of your original XML file. Always create a backup of your original XML file before running the programme. This ensures that you have a copy of the unmodified file in case any issues arise during the modification process.
 
 - Exercise caution when modifying XML files, as incorrect modifications can lead to errors or unexpected behaviour in SAP UI Landscape configurations.
 
