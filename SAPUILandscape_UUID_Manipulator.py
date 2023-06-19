@@ -1,15 +1,28 @@
+
+
 import time
-from utils.console import *
-from utils.excel_utils import *
-from utils.xml_utils import *
+import os
 import xml.etree.ElementTree as ET
 import pandas as pd
+from utils.console import *
+
+from utils.excel_utils import *
+from utils.xml_utils import *
+
+
+def display_loading_bar():
+    print("Exporting in progress, Please Wait", end="")
+    for _ in range(10):
+        time.sleep(0.1)
+        print(".", end="", flush=True)
+    print()
 
 
 def main():
     while True:
         display_header()
         display_wl_msg()
+
         # Prompt the user for the XML file path
         while True:
             xml_file_path = get_user_input("Enter the path to the XML file: ")
@@ -32,7 +45,7 @@ def main():
 
             regenerate_workspace_uuids(workspaces)
 
-            # regenerating
+            # Regenerating UUIDs
             for node in root.findall(".//Node"):
                 node.set('uuid', str(uuid.uuid4()))
 
@@ -52,11 +65,22 @@ def main():
             tree.write(output_file)
             display_success(f"Modified XML file saved as: {output_file}")
 
-            # Process the XML file and generate Excel file
-            output_file_path = generate_excel_file(output_file)
-            print("Excel file generated:", output_file_path)
+            # Exporting the XML file
+            display_loading_bar()
+            time.sleep(1)  # Simulating export delay
 
-            time.sleep(5)  # Delay for 5 seconds before prompting for input
+            # Process the XML file and generate Excel files
+            general_excel_file, duplicates_excel_file = generate_excel_files(output_file)
+            print("General Excel file generated:", general_excel_file)
+            print("Duplicates Excel file generated:", duplicates_excel_file)
+
+            # Exporting the Excel files
+            display_loading_bar()
+            time.sleep(1)  # Simulating export delay
+
+
+
+            time.sleep(2)  # Delay for 2 seconds before prompting for input
 
             choice = get_user_input("Enter 'n' to perform another operation or 'q' to exit: ")
             if choice.lower() == 'q':
