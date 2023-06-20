@@ -14,7 +14,7 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 
 - ***Update Service IDs:*** The programme updates the service IDs of items based on the regenerated UUIDs of services. This ensures proper referencing and consistency within the XML file.
 
-- ***Remove SAPUILandscapeGlobal Inclusions:*** If the XML file includes "SAPUILandscapeGlobal.xml", the programme provides an option to remove this include. This is necessary to make the XML file a central file that can be used independently.
+- ***Remove SAPUILandscapeGlobal Inclusions:*** If the XML file includes "SAPUILandscapeGlobal.xml", the programme provides an option to remove this inclusion. This is necessary to make the XML file a central file that can be used independently.
 
 - ***Exporting an Excel file of all SAP systems:*** Information exported is node names, system names, SID, system types, system URL (for FIORI or NWBC types) or server address, router address, etc.
 
