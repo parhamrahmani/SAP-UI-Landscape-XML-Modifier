@@ -108,3 +108,80 @@ def regenerate_uuids_export_excel(xml_file_path):
 
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
+
+
+# Function to remove duplications in the XML file
+
+
+import os
+
+
+def remove_duplicates(xml_file_path):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+
+        # Create a DataFrame from the XML data
+        data = []  # List to store XML data
+
+        for item in root.findall(".//Item"):
+            item_id = item.get('uuid')
+            service_id = item.get('serviceid')
+            items = root.findall(".//Item")
+            print(f"Number of items found: {len(items)}")
+
+            for service in root.findall(".//Service"):
+                if service.get('uuid') == service_id:
+
+                    service_name = service.get('name')
+                    service_sid = service.get('systemid')
+
+                    if service.get('type') == 'SAPGUI':
+                        service_server = service.get('server')
+                    else:
+                        service_server = service.get('url')
+
+                    data.append([
+                        item_id,
+                        service_id,
+                        service_name,
+                        service_sid,
+                        service_server
+                    ])
+
+        df = pd.DataFrame(data, columns=['Item Id', 'Service Id', 'Service Name', 'Service SID', 'Service Server'])
+        print(df)
+
+
+
+
+    except Exception as e:
+        print(f"An error occurred while processing the XML file: {str(e)}")
+
+
+def show_stats(xml_file_path):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+
+        all_items = root.findall('.//Item')
+        node_items = root.findall('.//Node/Item')
+        child_node_items = root.findall('.//Node/Node/Item')
+        workspaces = root.findall('.//Workspace')
+        services = root.findall('.//Service')
+        routers = root.findall('.//Router')
+        messageservers = root.findall('.//Messageserver')
+
+        print("Statistics for file: " + xml_file_path)
+        print("Number of workspaces: " + str(len(workspaces)))
+        print("Number of items: " + str(len(all_items)))
+        print("Number of items in nodes: " + str(len(node_items)))
+        print("Number of items in child nodes: " + str(len(child_node_items)))
+        print("Number of services: " + str(len(services)))
+        print("Number of routers: " + str(len(routers)))
+        print("Number of message servers: " + str(len(messageservers)))
+
+    except Exception as e:
+        print(f"An error occurred while processing the XML file: {str(e)}")

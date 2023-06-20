@@ -11,6 +11,7 @@ def main():
         # Prompt the user for the XML file path
         while True:
             xml_file_path = get_user_input("Enter the path to the XML file: ")
+            xml_file_path = xml_check(xml_file_path)
             xml_file_path = remove_quotes(xml_file_path)
 
             if not os.path.isfile(xml_file_path):
@@ -19,12 +20,19 @@ def main():
                 break
 
         display_menu()
-        choice = get_user_input("Enter your choice (1 or 2): ")
+        choice = get_user_input("Enter your choice: ")
 
         if choice == '1':
             regenerate_uuids_export_excel(xml_file_path)
         elif choice == '2':
+            if not xml_check(xml_file_path):
+                display_error("Invalid XML file path. Please try again.")
+                continue
             export_excel(xml_file_path)
+        elif choice == '3':
+            remove_duplicates(xml_file_path)
+        elif choice == '4':
+            show_stats(xml_file_path)
         else:
             display_error("Invalid choice. Please try again.")
 
@@ -37,3 +45,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

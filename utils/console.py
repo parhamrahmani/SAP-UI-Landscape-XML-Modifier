@@ -62,3 +62,17 @@ def display_menu():
     print("Menu Options:")
     print("1. Regenerate UUIDs and export Excel Reports")
     print("2. Export Excel Reports")
+    print("3. Remove duplicate entries (still in development)")
+    print("4. Show the statistics of your xml file")
+
+
+def xml_check(file_path):
+    while True:
+        if not file_path.lower().endswith('.xml'):
+            print("Invalid file path. Please make sure the file path ends with '.xml' in lowercase.")
+            file_path = get_user_input("Enter the path to the XML file: ")
+        else:
+            dir_name, file_name = os.path.split(file_path)
+            new_file_name = file_name.lower()
+            new_file_path = os.path.join(dir_name, new_file_name)
+            return new_file_path

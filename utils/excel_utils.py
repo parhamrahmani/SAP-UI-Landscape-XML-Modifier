@@ -29,18 +29,18 @@ def generate_excel_files(xml_file_path):
             'Router Address': [],
             'Message Server Name': [],
             'Message Server Host': [],
-            'Is Duplicate': [],
             'Item UUID': [],
             'Service UUID': []
         }
 
         def add_service_data(workspace_name, parent_node_name, child_node_name, item):
             service_id = item.get('serviceid')
+            existing_service_uuids = data_sheet_1['Service UUID']  # Get the existing service UUIDs
 
             for service in services:
                 service_uuid = service.get('uuid')
 
-                if service_uuid == service_id:
+                if service_uuid == service_id and service_uuid not in existing_service_uuids:
                     service_type = service.get('type')
                     service_name = service.get('name')
                     service_description = service.get('description')
@@ -82,7 +82,6 @@ def generate_excel_files(xml_file_path):
                     data_sheet_1['Router Address'].append(router_address)
                     data_sheet_1['Message Server Name'].append(messageserver_name)
                     data_sheet_1['Message Server Host'].append(messageserver_address)
-                    data_sheet_1['Is Duplicate'].append('')
                     data_sheet_1['Item UUID'].append(item.get('uuid'))
                     data_sheet_1['Service UUID'].append(service_uuid)
 
@@ -118,14 +117,6 @@ def generate_excel_files(xml_file_path):
         # Create a DataFrame from the data dictionary
         df = pd.DataFrame(data_sheet_1)
 
-        # Mark duplicates in the 'System Server' column if system type is 'SAPGUI'
-        df.loc[df['System Type'] == 'SAPGUI', 'Is Duplicate'] = df.duplicated(
-            subset=['System Server', 'System Id', 'System Name'], keep=False)
-
-        # Mark duplicates in the 'System URL' column if system type is not 'SAPGUI'
-        df.loc[df['System Type'] != 'SAPGUI', 'Is Duplicate'] = df.duplicated(
-            subset=['System URL', 'System Id', 'System Name'], keep=False)
-
         # Save the DataFrame to Excel
         output_file_path = file_path.replace('.xml', '.xlsx')
         df.to_excel(output_file_path, index=False)
@@ -138,29 +129,28 @@ def generate_excel_files(xml_file_path):
     # Read the general Excel file into a DataFrame
     df = pd.read_excel(general_file_path)
 
-    # Filter the DataFrame to keep only duplicate rows
-    duplicates_df = df[df['Is Duplicate']]
+    # Find duplicates based on specific columns
+    duplicates = df[df.duplicated(subset=['System Name', 'System Description', 'System Id', 'System Type'],
+                                  keep=False)].copy()
 
     # Generate the duplicate file path
     duplicate_file_path = general_file_path.replace('.xlsx', '_duplicates.xlsx')
 
     # Save the duplicate DataFrame to a new Excel file
-    duplicates_df.to_excel(duplicate_file_path, index=False)
+    duplicates.to_excel(duplicate_file_path, index=False)
 
     return general_file_path, duplicate_file_path
 
 
 def export_excel(xml_file_path):
     try:
-        # Read the XML file
-        tree = ET.parse(xml_file_path)
-
         # Prompt the user for the output file path and name
         output_path = input("Enter the output file path: ")
         output_name = input("Enter the output file name: ")
         print("Please wait while the Excel files are being processed...")
         print("This may take a few minutes depending on the size of the XML file.")
         # Process the temporary XML file and generate Excel files
+        display_loading_bar()
         general_excel_file, duplicates_excel_file = generate_excel_files(xml_file_path)
 
         # Move the generated Excel files to the desired output path and name
@@ -171,7 +161,6 @@ def export_excel(xml_file_path):
 
         print("General Excel file saved to:", new_general_excel_file)
         print("Duplicates Excel file saved to:", new_duplicates_excel_file)
-
 
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
