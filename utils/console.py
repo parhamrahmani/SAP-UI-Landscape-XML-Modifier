@@ -1,4 +1,6 @@
 import os
+import time
+
 
 # Function to clear the console screen
 def clear_screen():
@@ -13,6 +15,7 @@ def display_header():
     print("=============================================")
     print()
 
+
 # Function to display welcome message
 
 def display_wl_msg():
@@ -22,12 +25,12 @@ def display_wl_msg():
     print("in order to make them usable as central files.")
     print()
 
+
 # Function to display prompts and get user input
 def get_user_input(prompt):
     user_input = input(prompt)
     user_input = user_input.strip(' "\'')  # Remove spaces, double quotes, and single quotes
     return user_input
-
 
 
 # Function to display error messages
@@ -45,3 +48,17 @@ def remove_quotes(string):
     if string.startswith('"') and string.endswith('"'):
         return string[1:-1]
     return string
+
+
+def display_loading_bar():
+    print("Exporting in progress, Please Wait", end="")
+    for _ in range(10):
+        time.sleep(0.1)
+        print(".", end="", flush=True)
+    print()
+
+
+def display_menu():
+    print("Menu Options:")
+    print("1. Regenerate UUIDs and export Excel Reports")
+    print("2. Export Excel Reports")

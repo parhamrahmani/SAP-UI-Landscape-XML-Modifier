@@ -1,5 +1,7 @@
 import uuid
-from utils.console import get_user_input
+import xml.etree.ElementTree as ET
+from utils.console import *
+from utils.excel_utils import *
 
 
 # Function to regenerate UUIDs for workspaces
@@ -61,3 +63,48 @@ def remove_global_includes(root):
     else:
         return False
 
+
+def regenerate_uuids_export_excel(xml_file_path):
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+
+        workspaces = root.findall(".//Workspace")
+
+        regenerate_workspace_uuids(workspaces)
+
+        # Regenerating UUIDs
+        for node in root.findall(".//Node"):
+            node.set('uuid', str(uuid.uuid4()))
+
+        regenerate_service_uuids(root)
+
+        if remove_global_includes(root):
+            display_success("Global includes removed.")
+        else:
+            print("No include with URL containing 'SAPUILandscapeGlobal.xml' found.")
+
+        output_path = get_user_input("Enter the output path for the modified XML file: ")
+        output_name = get_user_input("Enter the name for your output file: ")
+        output_file = os.path.join(output_path, output_name + '.xml')
+        for elem in root.iter('address'):
+            elem.text = output_file
+
+        tree.write(output_file)
+        display_success(f"Modified XML file saved as: {output_file}")
+
+        # Exporting the XML file
+        display_loading_bar()
+        time.sleep(1)  # Simulating export delay
+
+        # Process the XML file and generate Excel files
+        general_excel_file, duplicates_excel_file = generate_excel_files(output_file)
+        print("General Excel file generated:", general_excel_file)
+        print("Duplicates Excel file generated:", duplicates_excel_file)
+
+        # Exporting the Excel files
+        display_loading_bar()
+        time.sleep(1)  # Simulating export delay
+
+    except Exception as e:
+        display_error(f"An error occurred while processing the XML file: {str(e)}")
