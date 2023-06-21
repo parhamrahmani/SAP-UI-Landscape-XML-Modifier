@@ -12,6 +12,7 @@ def regenerate_workspace_uuids(workspaces):
         if regenerate_all_uuids or get_user_input(
                 f"Regenerate UUID for workspace '{workspace.get('name')}'? (y/n): ").lower() == "y":
             workspace.set('uuid', str(uuid.uuid4()))
+            workspace.set('expanded', str(0))
             new_workspace_name = get_user_input(f"Enter the new name for workspace '{workspace.get('name')}': ")
             workspace.set('name', new_workspace_name)
 
@@ -102,24 +103,20 @@ def regenerate_uuids_export_excel(xml_file_path):
         print("General Excel file generated:", general_excel_file)
         print("Duplicates Excel file generated:", duplicates_excel_file)
 
-        # Exporting the Excel files
-        display_loading_bar()
-        time.sleep(1)  # Simulating export delay
-
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
 
 
 # Function to remove duplications in the XML file
 
-
-import os
+import lxml.etree as le
 
 
 def remove_duplicates(xml_file_path):
     try:
+        print("Processing XML file...")
         # Parse the XML file
-        tree = ET.parse(xml_file_path)
+        tree = le.parse(xml_file_path)
         root = tree.getroot()
 
         # Create a DataFrame from the XML data
@@ -128,12 +125,9 @@ def remove_duplicates(xml_file_path):
         for item in root.findall(".//Item"):
             item_id = item.get('uuid')
             service_id = item.get('serviceid')
-            items = root.findall(".//Item")
-            print(f"Number of items found: {len(items)}")
 
             for service in root.findall(".//Service"):
                 if service.get('uuid') == service_id:
-
                     service_name = service.get('name')
                     service_sid = service.get('systemid')
 
@@ -151,10 +145,35 @@ def remove_duplicates(xml_file_path):
                     ])
 
         df = pd.DataFrame(data, columns=['Item Id', 'Service Id', 'Service Name', 'Service SID', 'Service Server'])
-        print(df)
 
+        # Identify duplicate items based on service name, SID, and server
+        duplicates = df[df.duplicated(subset=['Service SID', 'Service Server'], keep=False)].copy()
 
+        # Get unique UUIDs of duplicate items and services to remove
+        item_uuids = duplicates['Item Id'].unique().tolist()
+        service_uuids = duplicates['Service Id'].unique().tolist()
 
+        # Remove duplicate items and services
+        for item_id in item_uuids:
+            elements_to_remove = root.xpath(f".//Item[@uuid='{item_id}']")
+            for elem in elements_to_remove:
+                parent = elem.getparent()
+                parent.remove(elem)
+
+        for service_id in service_uuids:
+            elements_to_remove = root.xpath(f".//Service[@uuid='{service_id}']")
+            for elem in elements_to_remove:
+                parent = elem.getparent()
+                parent.remove(elem)
+
+        # Prompt user for output file path and name
+        output_file_path = input("Enter the output file path: ")
+        output_file_name = input("Enter the output file name: ")
+
+        # Save the modified XML to the specified location
+        output_file_path_with_name = os.path.join(output_file_path, output_file_name + '.xml')
+        tree.write(output_file_path_with_name)
+        print(f"XML file saved successfully at {output_file_path_with_name}")
 
     except Exception as e:
         print(f"An error occurred while processing the XML file: {str(e)}")
