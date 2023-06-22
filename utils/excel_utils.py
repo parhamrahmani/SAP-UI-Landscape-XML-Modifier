@@ -1,10 +1,7 @@
 import shutil
 import xml.etree.ElementTree as ET
 import pandas as pd
-
 from utils.xml_utils import *
-import tempfile
-
 from utils.console import *
 
 
@@ -17,18 +14,18 @@ def generate_excel_files(xml_file_path):
         # Create a dictionary to store the data
         data_sheet_1 = {
             'Workspace': [],
-            'Parent Node': [],
-            'Child Node': [],
-            'System Name': [],
-            'System Description': [],
+            'System URL/System Server': [],
             'System Id': [],
+            'System Name': [],
             'System Type': [],
+            'Instance Number': [],
             'System Client': [],
-            'System URL': [],
-            'System Server': [],
             'Router Address': [],
             'Message Server Name': [],
             'Message Server Host': [],
+            'System Description': [],
+            'Parent Node': [],
+            'Child Node': [],
             'Item UUID': [],
             'Service UUID': []
         }
@@ -46,8 +43,13 @@ def generate_excel_files(xml_file_path):
                     service_description = service.get('description')
                     service_sid = service.get('systemid')
                     service_client = service.get('client')
-                    service_url = service.get('url')
-                    service_server = service.get('server')
+
+                    if service_type == 'SAPGUI':
+                        service_server = service.get('server')
+                        instance_number = service_server.split(':')[-1][-2:]
+                    else:
+                        service_server = service.get('url')
+                        instance_number = ''
 
                     router_address = ''
                     for router in routers:
@@ -77,8 +79,8 @@ def generate_excel_files(xml_file_path):
                     data_sheet_1['System Id'].append(service_sid)
                     data_sheet_1['System Type'].append(service_type)
                     data_sheet_1['System Client'].append(service_client)
-                    data_sheet_1['System URL'].append(service_url)
-                    data_sheet_1['System Server'].append(service_server)
+                    data_sheet_1['Instance Number'].append(instance_number)
+                    data_sheet_1['System URL/System Server'].append(service_server)
                     data_sheet_1['Router Address'].append(router_address)
                     data_sheet_1['Message Server Name'].append(messageserver_name)
                     data_sheet_1['Message Server Host'].append(messageserver_address)
@@ -92,7 +94,7 @@ def generate_excel_files(xml_file_path):
             workspaces = root.findall('.//Workspace')
             services = root.findall('.//Service')
             routers = root.findall('.//Router')
-            messageservers = root.findall('.//MessageServer')
+            messageservers = root.findall('.//Messageserver')
 
             for workspace in workspaces:
                 workspace_name = workspace.get('name')
@@ -144,14 +146,16 @@ def generate_excel_files(xml_file_path):
 
 def export_excel(xml_file_path):
     try:
-        # Prompt the user for the output file path and name
-        output_path = input("Enter the output file path: ")
-        output_name = input("Enter the output file name: ")
+
         print("Please wait while the Excel files are being processed...")
         print("This may take a few minutes depending on the size of the XML file.")
         # Process the temporary XML file and generate Excel files
         display_loading_bar()
         general_excel_file, duplicates_excel_file = generate_excel_files(xml_file_path)
+
+        # Prompt the user for the output file path and name
+        output_path = input("Enter the output file path: ")
+        output_name = input("Enter the output file name: ")
 
         # Move the generated Excel files to the desired output path and name
         new_general_excel_file = os.path.join(output_path, output_name + '.xlsx')
