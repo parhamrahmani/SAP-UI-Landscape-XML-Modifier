@@ -60,10 +60,12 @@ def display_loading_bar():
 
 def display_menu():
     print("Menu Options:")
-    print("1. Regenerate UUIDs and export Excel Reports")
-    print("2. Export Excel Reports")
-    print("3. Remove duplicate entries (still in development)")
-    print("4. Show the statistics of your xml file")
+    print("1. Add a new system from your existing XML file to another XML file")
+    print("2. Regenerate UUIDs and export Excel Reports")
+    print("3. Export Excel Reports")
+    print("4. Remove duplicate entries (still in development)")
+    print("5. Show the statistics of your xml file")
+    print("6. Extract from nodes (still in development)\n")
 
 
 def xml_check(file_path):
