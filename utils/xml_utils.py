@@ -2,6 +2,7 @@ import uuid
 import xml.etree.ElementTree as ET
 from utils.console import *
 from utils.excel_utils import *
+import lxml.etree as le
 
 
 # Function to regenerate UUIDs for workspaces
@@ -107,64 +108,156 @@ def regenerate_uuids_export_excel(xml_file_path):
         display_error(f"An error occurred while processing the XML file: {str(e)}")
 
 
-# Function to remove duplications in the XML file
+def add_systems_to_xml(xml_file_path, xml_file_path_destination):
+    # Show Warning
+    print("Warning: This function will add a system from your existing SAP Logon XML file to another XML file.")
+    print("Please make sure that the system you want to add is already added to your existing XML file by SAP Logon")
+    print("Please make sure that the destination XML file has the right structure.\n")
+    print("----------------------------------------")
+    print("Parsing XML file...")
+    print("----------------------------------------")
+    # Parse the XML file
+    tree = le.parse(xml_file_path)
+    root = tree.getroot()
+    system_uuid = None
+    print("Choose the connection type of the system you want to add:")
+    print("1. Custom Application Server")
+    print("2. Group/Server Selection\n")
 
-import lxml.etree as le
+    choice = int(input("Enter your choice (1 or 2): "))
+
+    while choice not in [1, 2]:
+        print("Invalid choice. Please enter 1 or 2.")
+        choice = int(input("Enter your choice (1 or 2): "))
+
+    if choice == 1:
+        while True:
+            print("Enter the SAP System information:")
+            # Prompt user for necessary information
+            description = input("Description: ")
+            applicationServer = input("*Application Server: ")
+            instanceNumber = input("*Instance Number: ")
+            systemID = input("*System ID: ")
+            SAPRouterString = input("SAP Router String: ")
+
+            # Check if mandatory fields are empty
+            if not applicationServer.strip() or not instanceNumber.strip() or not systemID.strip():
+                print("Mandatory fields cannot be left blank. Please try again.")
+                continue  # Restart the loop
+
+            # Find the SAP system from the root xml file
+            print("Processing XML file...")
+
+            # Find the SAP system
+            server_address = applicationServer + ":32" + instanceNumber
+            print(server_address)
+
+            if description is not None:
+                sap_system = root.xpath(f".//Service[@server='{server_address}']")
+            else:
+                sap_system = root.xpath(f".//Service[@server='{server_address}']")
+
+            if not sap_system:
+                print("The SAP system you are trying to add does not exist in your root SAP Logon XML file.")
+                add_system = input("Do you want to try again? (y/n): ")
+                if add_system.lower() == 'n':
+                    break  # Exit the loop if the user chooses not to try again
+                continue  # Restart the loop
+
+            sap_system = sap_system[0]  # Select the first matched element
+
+            if sap_system.get('type') == 'SAPGUI':
+                print("--------------------------------")
+                print("SAP system found. Information:")
+                system_uuid = sap_system.get('uuid')
+                print("uuid: " + system_uuid)
+                print("name: " + sap_system.get('name'))
+                print("type: " + sap_system.get('type'))
+                print("server" + sap_system.get('server'))
+                print("systemid: " + sap_system.get('systemid'))
+                routerid = sap_system.get('routerid')
+                msid = sap_system.get('msid')
+                if routerid is not None:
+                    router = root.find(f".//Router[@uuid='{routerid}']")
+                    print("uuid: " + router.get('uuid'))
+                    print("router: " + router.get('router'))
+                elif msid is not None:
+                    messageserver = root.find(f".//Messageserver[@uuid='{msid}']")
+                    print("uuid: " + messageserver.get('uuid'))
+                    print("name: " + messageserver.get('name'))
+                    print("host: " + messageserver.get('host'))
+                    print("port: " + messageserver.get('port'))
+
+            else:
+                print("----------------------------------")
+                print("SAP System found. Information:")
+                print("uuid: " + sap_system.get('uuid'))
+                print("name: " + sap_system.get('name'))
+                print("description: " + sap_system.get('description'))
+                print("type: " + sap_system.get('type'))
+                print("url: " + sap_system.get('url'))
+                print("client: " + sap_system.get('client'))
+
+            print("----------------------------------")
+            add_system = input("Is this the SAP system you want to add to the central configuration file? (y/n): ")
+
+            if add_system.lower() == 'n':
+                print("----------------------------------")
+                print("        Please try again.         ")
+                print("----------------------------------")
+                continue  # Restart the loop to ask for information again
+
+            break  # Exit the loop if the system is confirmed to be added
+
+        # Add the SAP system to the destination XML file
+        print("Adding the SAP system to the destination XML file...")
+        # Parse the XML file
+        tree_dest = le.parse(xml_file_path_destination)
+        root_dest = tree.getroot()
+
+        # Add the SAP system to the root
+        services = root_dest.xpath('.//Services')
+
+        tree_dest.write(xml_file_path_destination)
+
+    elif choice == 2:
+        # Handle choice 2
+        print("Choice 2 is selected. Implement the logic for Group/Server Selection.")
+
+    # Continue with the rest of your code
 
 
-def remove_duplicates(xml_file_path):
+def extract_from_nodes(xml_file_path):
     try:
         print("Processing XML file...")
         # Parse the XML file
-        tree = le.parse(xml_file_path)
+        tree = ET.parse(xml_file_path)
         root = tree.getroot()
 
-        # Create a DataFrame from the XML data
-        data = []  # List to store XML data
+        # Get all Items
+        all_items = root.findall('.//Item')
 
-        for item in root.findall(".//Item"):
-            item_id = item.get('uuid')
-            service_id = item.get('serviceid')
+        # Create a new workspace element
+        workspace = ET.SubElement(root.find('.//Workspaces'), 'Workspace')
+        workspace.set('name', 'Extracted from Nodes')
+        workspace.set('uuid', str(uuid.uuid4()))
+        workspace.set('expanded', '0')
 
-            for service in root.findall(".//Service"):
-                if service.get('uuid') == service_id:
-                    service_name = service.get('name')
-                    service_sid = service.get('systemid')
+        # Move the Item elements to the workspace
+        for item in all_items:
+            workspace.append(item)
 
-                    if service.get('type') == 'SAPGUI':
-                        service_server = service.get('server')
-                    else:
-                        service_server = service.get('url')
+        # Remove other workspaces
+        workspaces_to_delete = []
+        for ws in root.findall('.//Workspace'):
+            if ws.get('name') != 'Extracted from Nodes':
+                workspaces_to_delete.append(ws.get('uuid'))
 
-                    data.append([
-                        item_id,
-                        service_id,
-                        service_name,
-                        service_sid,
-                        service_server
-                    ])
+        temp_xml_file_path = r"C:\Users\PR106797\PycharmProjects\uuid_manipulator\cache\temp.xml"
+        tree.write(temp_xml_file_path)
 
-        df = pd.DataFrame(data, columns=['Item Id', 'Service Id', 'Service Name', 'Service SID', 'Service Server'])
-
-        # Identify duplicate items based on service name, SID, and server
-        duplicates = df[df.duplicated(subset=['Service SID', 'Service Server'], keep=False)].copy()
-
-        # Get unique UUIDs of duplicate items and services to remove
-        item_uuids = duplicates['Item Id'].unique().tolist()
-        service_uuids = duplicates['Service Id'].unique().tolist()
-
-        # Remove duplicate items and services
-        for item_id in item_uuids:
-            elements_to_remove = root.xpath(f".//Item[@uuid='{item_id}']")
-            for elem in elements_to_remove:
-                parent = elem.getparent()
-                parent.remove(elem)
-
-        for service_id in service_uuids:
-            elements_to_remove = root.xpath(f".//Service[@uuid='{service_id}']")
-            for elem in elements_to_remove:
-                parent = elem.getparent()
-                parent.remove(elem)
+        # Modify the temporary XML file
+        temp_root = remove_elements_from_xml(temp_xml_file_path, workspaces_to_delete, 'Workspace')
 
         # Prompt user for output file path and name
         output_file_path = input("Enter the output file path: ")
@@ -172,11 +265,27 @@ def remove_duplicates(xml_file_path):
 
         # Save the modified XML to the specified location
         output_file_path_with_name = os.path.join(output_file_path, output_file_name + '.xml')
-        tree.write(output_file_path_with_name)
+        temp_tree = ET.ElementTree(temp_root)
+        temp_tree.write(output_file_path_with_name)
         print(f"XML file saved successfully at {output_file_path_with_name}")
 
     except Exception as e:
         print(f"An error occurred while processing the XML file: {str(e)}")
+
+
+def remove_elements_from_xml(xml_file_path, elements_to_remove, element_name):
+    # Parse the XML file
+    tree = le.parse(xml_file_path)
+    root = tree.getroot()
+
+    # Remove elements
+    for elem_id in elements_to_remove:
+        elements_to_remove = root.xpath(f".//{element_name}[@uuid='{elem_id}']")
+        for elem in elements_to_remove:
+            parent = elem.getparent()
+            parent.remove(elem)
+
+    return root
 
 
 def show_stats(xml_file_path):
