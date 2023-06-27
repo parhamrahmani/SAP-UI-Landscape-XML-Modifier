@@ -89,13 +89,9 @@ py --version
 ```
 py -m ensurepip
 ```
-*Install pandas*
+*Install the required packages*
 ```
-py -m pip install pandas
-```
-*Install openpyxl*
-```
-py -m pip install openpyxl
+py -m pip install pandas openpyxl lxml
 ```
 - After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *SAPUILandscape_UUID_Manipulator.py*.
 You should see this when run correctly:
