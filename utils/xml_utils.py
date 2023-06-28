@@ -117,7 +117,7 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
     print("Parsing XML file...")
     print("----------------------------------------")
     # Parse the XML file
-    tree = le.parse(xml_file_path)
+    tree = ET.parse(xml_file_path)
     root = tree.getroot()
     system_uuid = None
     print("Choose the connection type of the system you want to add:")
@@ -132,7 +132,7 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
 
     if choice == 1:
         while True:
-            print("Enter the SAP System information:")
+            print("\nEnter the SAP System information:")
             # Prompt user for necessary information
             description = input("Description: ")
             applicationServer = input("*Application Server: ")
@@ -147,24 +147,31 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
 
             # Find the SAP system from the root xml file
             print("Processing XML file...")
+            sap_system = None
 
             # Find the SAP system
             server_address = applicationServer + ":32" + instanceNumber
-            print(server_address)
 
-            if description is not None:
-                sap_system = root.xpath(f".//Service[@server='{server_address}']")
+            if not description.strip():
+                for service in root.findall(".//Service"):
+                    if service.get('server') == server_address and service.get('systemid') == systemID:
+                        sap_system = service
+                        break
             else:
-                sap_system = root.xpath(f".//Service[@server='{server_address}']")
+                for service in root.findall(".//Service"):
+                    if service.get('server') == server_address and service.get('systemid') == systemID and service.get(
+                            'name') == description:
+                        sap_system = service
+                        break
 
-            if not sap_system:
+            if sap_system is None:
                 print("The SAP system you are trying to add does not exist in your root SAP Logon XML file.")
                 add_system = input("Do you want to try again? (y/n): ")
                 if add_system.lower() == 'n':
                     break  # Exit the loop if the user chooses not to try again
                 continue  # Restart the loop
 
-            sap_system = sap_system[0]  # Select the first matched element
+            # sap_system = sap_system[0]  # Select the first matched element
 
             if sap_system.get('type') == 'SAPGUI':
                 print("--------------------------------")
@@ -173,7 +180,7 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
                 print("uuid: " + system_uuid)
                 print("name: " + sap_system.get('name'))
                 print("type: " + sap_system.get('type'))
-                print("server" + sap_system.get('server'))
+                print("server: " + sap_system.get('server'))
                 print("systemid: " + sap_system.get('systemid'))
                 routerid = sap_system.get('routerid')
                 msid = sap_system.get('msid')
@@ -200,25 +207,36 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
 
             print("----------------------------------")
             add_system = input("Is this the SAP system you want to add to the central configuration file? (y/n): ")
+            if add_system.lower() == 'y':
+                print("----------------------------------")
+                print("        Adding the system...      ")
+                print("----------------------------------")
+                system_to_add = None
+                for service in root.findall('.//Service'):
+                    if service.get('uuid') == sap_system.get('uuid'):
+                        system_to_add = service
+                        break
 
-            if add_system.lower() == 'n':
+                tree_dest = ET.parse(xml_file_path_destination)
+                root_dest = tree_dest.getroot()
+                services = root_dest.find('.//Services')
+                system_to_add.set('uuid', str(uuid.uuid4()))
+                services.append(system_to_add)
+
+                # Prompt user for output file path and name
+                output_file_path = input("Enter the output file path: ")
+                output_file_name = input("Enter the output file name: ")
+                output_file = os.path.join(output_file_path, output_file_name + ".xml")
+                tree_dest.write(output_file)
+                print(f"XML file saved successfully at {output_file}")
+
+            elif add_system.lower() == 'n':
                 print("----------------------------------")
                 print("        Please try again.         ")
                 print("----------------------------------")
                 continue  # Restart the loop to ask for information again
 
             break  # Exit the loop if the system is confirmed to be added
-
-        # Add the SAP system to the destination XML file
-        print("Adding the SAP system to the destination XML file...")
-        # Parse the XML file
-        tree_dest = le.parse(xml_file_path_destination)
-        root_dest = tree.getroot()
-
-        # Add the SAP system to the root
-        services = root_dest.xpath('.//Services')
-
-        tree_dest.write(xml_file_path_destination)
 
     elif choice == 2:
         # Handle choice 2
