@@ -209,19 +209,57 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
             add_system = input("Is this the SAP system you want to add to the central configuration file? (y/n): ")
             if add_system.lower() == 'y':
                 print("----------------------------------")
-                print("        Adding the system...      ")
+                print("        Adding the system         ")
                 print("----------------------------------")
-                system_to_add = None
-                for service in root.findall('.//Service'):
-                    if service.get('uuid') == sap_system.get('uuid'):
-                        system_to_add = service
-                        break
-
+                # Parse the destination XML file
                 tree_dest = ET.parse(xml_file_path_destination)
                 root_dest = tree_dest.getroot()
-                services = root_dest.find('.//Services')
-                system_to_add.set('uuid', str(uuid.uuid4()))
-                services.append(system_to_add)
+                # Check if the destination XML file has the right structure
+                if len(root_dest.findall('.//Services')) == 0:
+                    print("The destination XML file does not have the Services element.\n")
+                    print("Adding the Services element...")
+                    services = ET.Element('Services')
+                    root_dest.append(services)
+                    ET.SubElement(services, 'Service')
+                    sap_system.set('uuid', str(uuid.uuid4()))
+                    services.append(sap_system)
+                    print("Services element added...\n")
+                else:
+                    sap_system.set('uuid', str(uuid.uuid4()))
+                    root_dest.find('.//Services').append(sap_system)
+
+                    break
+
+                # Check if there is Routers mentioned the SAP system, and they are also in the destination file
+                routerid = sap_system.get('routerid')
+                for router in root.findall(".//Router"):
+                    if router.get('uuid') == routerid:
+                        router_address = router.get('router')
+                        print("The SAP system has a router.")
+                        # Check if there is a routers element in the destination file
+                        if len(root_dest.findall('.//Routers')) == 0:
+                            print(
+                                "The SAP system has a router, but there is no router element in the destination file.")
+                            print("Adding the router element...")
+                            routers = ET.Element('Routers')
+                            root_dest.append(routers)
+                            ET.SubElement(routers, 'Router')
+                            routers.append(router)
+                            print("Router element added...")
+                        else:
+                            for router in root_dest.findall('.//Router'):
+                                # Check if the router is already in the destination file
+                                if router.get('router') != router_address:
+                                    root_dest.find('.//Routers').append(router)
+                                    break
+                # Check if the SAP system is successfully added
+                for service in root_dest.findall(".//Service"):
+                    if service.get('server') == sap_system.get('server') \
+                            and service.get('systemid') == sap_system.get('systemid') \
+                            and service.get('name') == sap_system.get('name'):
+                        print("SAP system added successfully.")
+                        break
+
 
                 # Prompt user for output file path and name
                 output_file_path = input("Enter the output file path: ")
