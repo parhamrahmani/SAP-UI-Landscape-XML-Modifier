@@ -228,8 +228,6 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
                     sap_system.set('uuid', str(uuid.uuid4()))
                     root_dest.find('.//Services').append(sap_system)
 
-                    break
-
                 # Check if there is Routers mentioned the SAP system, and they are also in the destination file
                 routerid = sap_system.get('routerid')
                 for router in root.findall(".//Router"):
@@ -260,6 +258,97 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
                         print("SAP system added successfully.")
                         break
 
+                # Check if the xml file has the right structure
+                if len(root_dest.findall('.//Workspaces')) == 0:
+                    print("The destination XML file does not have a Workspaces element.\n")
+                    print("Adding the Workspaces element...")
+                    workspaces = ET.Element('Workspaces')
+                    root_dest.append(workspaces)
+                    workspace = ET.SubElement(workspaces, 'Workspace')
+                    workspace.set('name', 'Default')
+                    workspace.set('uuid', str(uuid.uuid4()))
+                    item = ET.SubElement(workspace, 'Item')
+                    item.set('uuid', sap_system.get('uuid'))
+                    item.set('serviceid', sap_system.get('uuid'))
+                    print("Workspaces element added...\n")
+                else:
+                    workspaces = root_dest.findall('.//Workspace')
+                    # prompt user to select a workspace
+                    print("Please select a workspace to add the SAP system to:")
+                    for i in range(len(workspaces)):
+                        if workspaces[i].get('name') is not None:
+                            print(f"{i + 1}. {workspaces[i].get('name')}")
+
+                    print(f"{len(workspaces) + 1}. Create a new workspace")
+                    while True:
+                        try:
+                            choice = int(input("Enter your choice: "))
+                            if choice > (len(workspaces) + 1) or choice < 1:
+                                print("Invalid choice. Please try again.")
+                                continue
+                            elif choice == len(workspaces) + 1:
+                                # Prompt user to enter the name of the new workspace
+                                new_workspace_name = input("Enter the name of the new workspace: ")
+                                workspace = ET.SubElement(root_dest.find('.//Workspaces'), 'Workspace')
+                                workspace.set('name', new_workspace_name)
+                                workspace.set('uuid', str(uuid.uuid4()))
+                                # Prompt the user if they want to add a new node to the workspace
+                                add_node = input("Do you want to add a new node to the new workspace? (y/n): ")
+                                if add_node.lower() == 'y':
+                                    new_node_name = input("Enter the name of the new node: ")
+                                    new_node = ET.SubElement(workspace, 'Node')
+                                    new_node.set('name', new_node_name)
+                                    item = ET.SubElement(new_node, 'Item')
+                                    item.set('uuid', str(uuid.uuid4()))
+                                    item.set('serviceid', sap_system.get('uuid'))
+                                else:
+                                    item = ET.SubElement(workspace, 'Item')
+                                    item.set('uuid', str(uuid.uuid4()))
+                                    item.set('serviceid', sap_system.get('uuid'))
+                                break
+                            else:
+                                workspace = workspaces[choice - 1]
+                                # Prompt user to select a node
+                                print("Please select a node to add the SAP system to:")
+                                print(f"Nodes in {workspace.get('name')} workspace:")
+                                nodes = workspace.findall('.//Node')
+                                child_nodes = workspace.findall('.//Node/Node')
+                                for i, node in enumerate(nodes):
+                                    if node not in child_nodes:
+                                        print(f"{i + 1}. {node.get('name')}")
+                                        for j,child_node in enumerate(node.findall('.//Node')):
+                                            print("-" + f"{j + i + 1 + 1}. {node.get('name')}/{child_node.get('name')}")
+
+                                print(f"{len(nodes) + 1}. Create a new node")
+                                while True:
+                                    try:
+                                        choice = int(input("Enter your choice: "))
+                                        if choice > (len(nodes) + 1) or choice < 1:
+                                            print("Invalid choice. Please try again.")
+                                            continue
+                                        elif choice == len(nodes) + 1:
+                                            # Prompt user to enter the name of the new node
+                                            new_node_name = input("Enter the name of the new node: ")
+                                            new_node = ET.SubElement(workspace, 'Node')
+                                            new_node.set('name', new_node_name)
+                                            item = ET.SubElement(new_node, 'Item')
+                                            item.set('uuid', str(uuid.uuid4()))
+                                            item.set('serviceid', sap_system.get('uuid'))
+                                            break
+                                        else:
+                                            node = nodes[choice - 1]
+                                            item = ET.SubElement(node, 'Item')
+                                            item.set('uuid', str(uuid.uuid4()))
+                                            item.set('serviceid', sap_system.get('uuid'))
+                                            break
+                                    except ValueError:
+                                        print("Invalid choice. Please try again.")
+                                        continue
+
+                                break
+                        except ValueError:
+                            print("Invalid choice. Please try again.")
+                            continue
 
                 # Prompt user for output file path and name
                 output_file_path = input("Enter the output file path: ")
