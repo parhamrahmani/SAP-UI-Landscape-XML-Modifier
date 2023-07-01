@@ -1,8 +1,11 @@
+from utils.excel_utils import *
+import lxml.etree as le
+import uuid
 import uuid
 import xml.etree.ElementTree as ET
 from utils.console import *
-from utils.excel_utils import *
-import lxml.etree as le
+
+
 
 
 # Function to regenerate UUIDs for workspaces
@@ -119,7 +122,6 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
     # Parse the XML file
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
-    system_uuid = None
     print("Choose the connection type of the system you want to add:")
     print("1. Custom Application Server")
     print("2. Group/Server Selection\n")
@@ -316,7 +318,7 @@ def add_systems_to_xml(xml_file_path, xml_file_path_destination):
                                 for i, node in enumerate(nodes):
                                     if node not in child_nodes:
                                         print(f"{i + 1}. {node.get('name')}")
-                                        for j,child_node in enumerate(node.findall('.//Node')):
+                                        for j, child_node in enumerate(node.findall('.//Node')):
                                             print("-" + f"{j + i + 1 + 1}. {node.get('name')}/{child_node.get('name')}")
 
                                 print(f"{len(nodes) + 1}. Create a new node")
@@ -433,31 +435,32 @@ def remove_elements_from_xml(xml_file_path, elements_to_remove, element_name):
     return root
 
 
-def show_stats(xml_file_path):
-    try:
-        # Parse the XML file
-        tree = ET.parse(xml_file_path)
-        root = tree.getroot()
+def get_stats(xml_file_path):
+    # Parse the XML file
+    tree = ET.parse(xml_file_path)
+    root = tree.getroot()
 
-        all_items = root.findall('.//Item')
-        node_items = root.findall('.//Node/Item')
-        child_node_items = root.findall('.//Node/Node/Item')
-        workspaces = root.findall('.//Workspace')
-        services = root.findall('.//Service')
-        routers = root.findall('.//Router')
-        messageservers = root.findall('.//Messageserver')
+    all_items = root.findall('.//Item')
+    node_items = root.findall('.//Node/Item')
+    child_node_items = root.findall('.//Node/Node/Item')
+    workspaces = root.findall('.//Workspace')
+    services = root.findall('.//Service')
+    routers = root.findall('.//Router')
+    messageservers = root.findall('.//Messageserver')
 
-        print("Statistics for file: " + xml_file_path)
-        print("Number of workspaces: " + str(len(workspaces)))
-        print("Number of items: " + str(len(all_items)))
-        print("Number of items in nodes: " + str(len(node_items)))
-        print("Number of items in child nodes: " + str(len(child_node_items)))
-        print("Number of services: " + str(len(services)))
-        print("Number of routers: " + str(len(routers)))
-        print("Number of message servers: " + str(len(messageservers)))
+    stats = {
+        "workspaces": len(workspaces),
+        "items": len(all_items),
+        "items in nodes": len(node_items),
+        "items in child nodes": len(child_node_items),
+        "services": len(services),
+        "routers": len(routers),
+        "message servers": len(messageservers)
+    }
 
-    except Exception as e:
-        print(f"An error occurred while processing the XML file: {str(e)}")
+    return stats
+
+
 
 
 # Function to remove duplications in the XML file
