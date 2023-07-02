@@ -6,7 +6,7 @@ import tkinter as tk
 
 
 def show_stats_window(menu_frame):
-    from gui.menu import clear_frame, create_exit_back_buttons
+    from gui.menu import clear_frame, create_exit_restart_buttons
     # Clear the main window
     clear_frame(menu_frame)
 
@@ -20,7 +20,7 @@ def show_stats_window(menu_frame):
             stats_text = "\n".join([f"{k}: {v}" for k, v in stats.items()])
             stats_label = tk.Label(menu_frame, text=stats_text, font=("Arial", 14), bg="white")
             stats_label.pack(pady=10)
-            create_exit_back_buttons(menu_frame)
+            create_exit_restart_buttons(menu_frame)
         else:
             messagebox.showwarning("Invalid File Warning", "Please put the address of an XML file")
 
@@ -47,5 +47,5 @@ def show_stats_window(menu_frame):
     show_stats_button = tk.Button(entry_frame, text="Show Stats", command=show_stats, background="black",foreground="white")
     show_stats_button.pack(side="left", pady=5)
 
-    create_exit_back_buttons(menu_frame)
+    create_exit_restart_buttons(menu_frame)
 

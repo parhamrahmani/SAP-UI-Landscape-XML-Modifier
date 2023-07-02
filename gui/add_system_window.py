@@ -30,54 +30,54 @@ def add_system_window(menu_frame):
             clear_frame(menu_frame)  # Clear the menu_frame
 
             # create a label for source file
-            source_file_label = tk.Label(menu_frame, text=f"Source XML file: {source_xml_path}",
-                                         font=("Arial", 10, "bold"), fg="blue", bg="white")
+            source_file_label = tk.Label(menu_frame, text=f"Please select connection type: ",
+                                         font=("Arial", 12, "bold"), fg="black", bg="white")
             source_file_label.pack(pady=10)
-
-            # create a label for destination file
-            destination_file_label = tk.Label(menu_frame, text=f"Destination XML file: {destination_xml_path}",
-                                              font=("Arial", 10, "bold"), fg="red", bg="white")
-            destination_file_label.pack(pady=10)
 
             # create radio buttons for choosing the connection type
             connection_type = tk.IntVar()
-            radiobutton_1 = tk.Radiobutton(menu_frame, text="1. Custom Application Server", variable=connection_type,
+            radiobutton_1 = tk.Radiobutton(menu_frame, bg="white",fg="black", text="1. Custom Application Server",font=("Arial", 12, "bold") , variable=connection_type,
                                            value=1)
-            radiobutton_1.pack(pady=5)
-            radiobutton_2 = tk.Radiobutton(menu_frame, text="2. Group/Server Selection", variable=connection_type,
+            radiobutton_1.pack(pady=5,  anchor='center')
+            radiobutton_2 = tk.Radiobutton(menu_frame,bg="white",fg="black",  text="2. Group/Server Selection", font=("Arial", 12, "bold") ,variable=connection_type,
                                            value=2)
-            radiobutton_2.pack(pady=5)
+            radiobutton_2.pack(pady=5,  anchor='center')
 
-            # Create a frame to contain the form
-            form_frame = tk.Frame(menu_frame)
-            form_frame.pack(pady=10, fill='both', expand=True)  # Modified pack call
+            # Create a separate frame to contain the form
+            form_frame = tk.Frame(menu_frame, bg='white')
+            form_frame.pack(pady=40)
 
             # Create the form fields
-            applicationServer_entry = tk.Entry(form_frame)
-            applicationServer_entry.grid(row=0, column=1)
-            applicationServer_label = tk.Label(form_frame, text="Application Server")
-            applicationServer_label.grid(row=0, column=0)
+            applicationServer_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
+            applicationServer_entry.grid(row=0, column=1, padx=5, pady=5, sticky='we')
+            applicationServer_label = tk.Label(form_frame, text="Application Server", bg='white', fg='black',
+                                               font=("Arial", 12))
+            applicationServer_label.grid(row=0, column=0, padx=5, pady=5)
 
-            instanceNumber_entry = tk.Entry(form_frame)
-            instanceNumber_entry.grid(row=1, column=1)
-            instanceNumber_label = tk.Label(form_frame, text="Instance Number")
-            instanceNumber_label.grid(row=1, column=0)
+            instanceNumber_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
+            instanceNumber_entry.grid(row=1, column=1, padx=5, pady=5, sticky='we')
+            instanceNumber_label = tk.Label(form_frame, text="Instance Number", bg='white', fg='black',
+                                            font=("Arial", 12))
+            instanceNumber_label.grid(row=1, column=0, padx=5, pady=5)
 
-            systemID_entry = tk.Entry(form_frame)
-            systemID_entry.grid(row=2, column=1)
-            systemID_label = tk.Label(form_frame, text="System ID")
-            systemID_label.grid(row=2, column=0)
+            systemID_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
+            systemID_entry.grid(row=2, column=1, padx=5, pady=5, sticky='we')
+            systemID_label = tk.Label(form_frame, text="System ID", bg='white', fg='black', font=("Arial", 12))
+            systemID_label.grid(row=2, column=0, padx=5, pady=5)
+
+            # Configuring the column's weight to ensure they take up the full space
+            form_frame.grid_columnconfigure(1, weight=1)
+
+            # Create a button to send infroamtion to the next function
+            next_button = tk.Button(form_frame, text="Next", background="black", foreground="white", width=40, height=2)
+            next_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky='we')
 
             # Initially hide the form
             form_frame.pack_forget()
 
-            # Create 'Next' button
-            next_button = tk.Button(menu_frame, text="Next", background="black", foreground="white")
-            next_button.pack(pady=10)
-
             def on_connection_type_change(*args):
                 if connection_type.get() == 1:
-                    form_frame.pack(fill='both', expand=True)  # Show the form with modified pack call
+                    form_frame.pack()  # Show the form
                     next_button.config(command=lambda: add_custom_system_type(source_xml_path, destination_xml_path,
                                                                               applicationServer_entry.get(),
                                                                               instanceNumber_entry.get(),
@@ -89,9 +89,13 @@ def add_system_window(menu_frame):
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
 
-            create_exit_back_buttons(menu_frame)
+            # Create a frame for 'Exit' and 'Back' buttons
+            button_frame = tk.Frame(menu_frame)
+            button_frame.pack(side="bottom")
+            # Create 'Exit' and 'Back' buttons in the button_frame
+            create_exit_restart_buttons(button_frame)
 
-    from gui.menu import clear_frame, create_exit_back_buttons
+    from gui.menu import clear_frame, create_exit_restart_buttons
     # Clear the main window
     clear_frame(menu_frame)
 
@@ -109,7 +113,8 @@ def add_system_window(menu_frame):
     )
     description_label.pack(pady=10)
 
-    file_label = tk.Label(menu_frame, text="\n\nPlease put the address of your source XML file", font=("Arial", 10, "bold"),
+    file_label = tk.Label(menu_frame, text="\n\nPlease put the address of your source XML file",
+                          font=("Arial", 10, "bold"),
                           bg="white")
     file_label.pack(pady=10)
     entry_frame = tk.Frame(menu_frame)
@@ -120,20 +125,21 @@ def add_system_window(menu_frame):
                               foreground="white")
     browse_button.pack(side='left', padx=5)
 
-    file_label2 = tk.Label(menu_frame, text="\n\nPlease put the address of your destination XML file", font=("Arial", 10, "bold"),
-                            bg="white")
+    file_label2 = tk.Label(menu_frame, text="\n\nPlease put the address of your destination XML file",
+                           font=("Arial", 10, "bold"),
+                           bg="white")
     file_label2.pack(pady=10)
     second_entry_frame = tk.Frame(menu_frame)
     second_entry_frame.pack(pady=10)
     xml_path_entry2 = tk.Entry(second_entry_frame, width=50)  # Entry widget to input XML file path
     xml_path_entry2.pack(side='left')
-    browse_button2 = tk.Button(second_entry_frame, text="Browse", command=select_destination_xml_file, background="black",
-                                foreground="white")
+    browse_button2 = tk.Button(second_entry_frame, text="Browse", command=select_destination_xml_file,
+                               background="black",
+                               foreground="white")
     browse_button2.pack(side='left', padx=5)
 
     next_button = tk.Button(menu_frame, text="Next", background="black", foreground="white", width=10, height=2,
                             command=proceed_to_next)
     next_button.pack(pady=10)
 
-    create_exit_back_buttons(menu_frame)
-
+    create_exit_restart_buttons(menu_frame)

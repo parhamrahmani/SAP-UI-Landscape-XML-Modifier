@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 import tkinter.filedialog as filedialog
 import xml.etree.ElementTree as ET
@@ -12,6 +13,13 @@ from gui.stats_pad import show_stats_window
 from utils.excel_utils import export_excel
 from utils.xml_utils import extract_from_nodes, remove_duplicates, regenerate_uuids_export_excel, \
     get_stats
+import sys
+
+
+def restart_program():
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
+
 
 BUTTON_WIDTH = 30
 BUTTON_HEIGHT = 2
@@ -21,6 +29,20 @@ BUTTON_FONT_SIZE = 12
 def clear_frame(frame):
     for widget in frame.winfo_children():
         widget.destroy()
+
+    # If form_frame and button_frame are present, clear them as well
+    if hasattr(frame, 'form_frame'):
+        for widget in frame.form_frame.winfo_children():
+            widget.destroy()
+        del frame.form_frame  # Remove the reference to form_frame from frame
+    if hasattr(frame, 'button_frame'):
+        for widget in frame.button_frame.winfo_children():
+            widget.destroy()
+        del frame.button_frame  # Remove the reference to button_frame from frame
+    if hasattr(frame, 'next_button_frame'):
+        for widget in frame.next_button_frame.winfo_children():
+            widget.destroy()
+        del frame.next_button_frame  # Remove the reference to button_frame from frame
 
 
 def customize_button(button):
@@ -32,15 +54,15 @@ def customize_button(button):
     button.configure(font=button_font)
 
 
-def create_exit_back_buttons(frame):
+def create_exit_restart_buttons(frame):
     back_button = tk.Button(
         master=frame,
-        text="Main Menu",
+        text="Restart",
         background="black",
         foreground="white",
         width=BUTTON_WIDTH,
         height=BUTTON_HEIGHT,
-        command=lambda: go_back_to_main(frame)
+        command=lambda: restart_program()
     )
     customize_button(back_button)
     back_button.pack(side='right', anchor='se', padx=5, pady=5)
@@ -56,6 +78,7 @@ def create_exit_back_buttons(frame):
     )
     customize_button(exit_button)
     exit_button.pack(side='right', anchor='se', padx=5, pady=5)
+
 
 
 def create_main_menu_buttons(menu_frame):
@@ -129,10 +152,9 @@ def create_main_menu_buttons(menu_frame):
     customize_button(extract_button)
     extract_button.pack(pady=10, fill='both')
 
-    create_exit_back_buttons(menu_frame)
+    create_exit_restart_buttons(menu_frame)
 
 
-def go_back_to_main(menu_frame):
-    clear_frame(menu_frame)
-    create_main_menu_buttons(menu_frame)
+
+
 
