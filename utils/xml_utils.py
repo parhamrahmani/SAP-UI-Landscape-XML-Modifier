@@ -112,7 +112,7 @@ def regenerate_uuids_export_excel(xml_file_path):
 
 
 # Function to add a new custom application server type of system to xml file
-def add_custom_system_type(xml_file_path_source, xml_file_path_destination, description, applicationServer, instanceNumber, systemID, SAPRouterString):
+def add_custom_system_type(xml_file_path_source, xml_file_path_destination, applicationServer, instanceNumber, systemID):
     try:
         # Parse the source XML file
         tree = ET.parse(xml_file_path_source)
@@ -121,7 +121,7 @@ def add_custom_system_type(xml_file_path_source, xml_file_path_destination, desc
         tree_destination = ET.parse(xml_file_path_destination)
         root_destination = tree_destination.getroot()
 
-        
+
 
 
 

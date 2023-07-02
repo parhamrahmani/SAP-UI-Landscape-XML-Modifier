@@ -27,6 +27,18 @@ def add_system_window(menu_frame):
         if not source_xml_path.endswith('.xml') or not destination_xml_path.endswith('.xml'):
             messagebox.showwarning("Invalid File Warning", "Please enter valid XML file paths.")
         else:
+            clear_frame(menu_frame)  # Clear the menu_frame
+
+            # create a label for source file
+            source_file_label = tk.Label(menu_frame, text=f"Source XML file: {source_xml_path}",
+                                         font=("Arial", 10, "bold"), fg="blue", bg="white")
+            source_file_label.pack(pady=10)
+
+            # create a label for destination file
+            destination_file_label = tk.Label(menu_frame, text=f"Destination XML file: {destination_xml_path}",
+                                              font=("Arial", 10, "bold"), fg="red", bg="white")
+            destination_file_label.pack(pady=10)
+
             # create radio buttons for choosing the connection type
             connection_type = tk.IntVar()
             radiobutton_1 = tk.Radiobutton(menu_frame, text="1. Custom Application Server", variable=connection_type,
@@ -36,29 +48,45 @@ def add_system_window(menu_frame):
                                            value=2)
             radiobutton_2.pack(pady=5)
 
+            # Create a frame to contain the form
+            form_frame = tk.Frame(menu_frame)
+            form_frame.pack(pady=10, fill='both', expand=True)  # Modified pack call
+
+            # Create the form fields
+            applicationServer_entry = tk.Entry(form_frame)
+            applicationServer_entry.grid(row=0, column=1)
+            applicationServer_label = tk.Label(form_frame, text="Application Server")
+            applicationServer_label.grid(row=0, column=0)
+
+            instanceNumber_entry = tk.Entry(form_frame)
+            instanceNumber_entry.grid(row=1, column=1)
+            instanceNumber_label = tk.Label(form_frame, text="Instance Number")
+            instanceNumber_label.grid(row=1, column=0)
+
+            systemID_entry = tk.Entry(form_frame)
+            systemID_entry.grid(row=2, column=1)
+            systemID_label = tk.Label(form_frame, text="System ID")
+            systemID_label.grid(row=2, column=0)
+
+            # Initially hide the form
+            form_frame.pack_forget()
+
             # Create 'Next' button
             next_button = tk.Button(menu_frame, text="Next", background="black", foreground="white")
             next_button.pack(pady=10)
 
             def on_connection_type_change(*args):
                 if connection_type.get() == 1:
-                    next_button.config(command=lambda: add_custom_system_type(source_xml_path, destination_xml_path))
+                    form_frame.pack(fill='both', expand=True)  # Show the form with modified pack call
+                    next_button.config(command=lambda: add_custom_system_type(source_xml_path, destination_xml_path,
+                                                                              applicationServer_entry.get(),
+                                                                              instanceNumber_entry.get(),
+                                                                              systemID_entry.get()))
                 elif connection_type.get() == 2:
+                    form_frame.pack_forget()  # Hide the form
                     next_button.config(command=None)
 
             # Attach the handler to the radio button selection variable
-            connection_type.trace("w", on_connection_type_change)
-
-            clear_frame(menu_frame)  # Clear the menu_frame
-            # create a label for source file
-            source_file_label = tk.Label(menu_frame, text=f"Source XML file: {source_xml_path}",
-                                         font=("Arial", 10, "bold"), fg="blue", bg="white")
-            source_file_label.pack(pady=10)
-            # create a label for destination file
-            destination_file_label = tk.Label(menu_frame, text=f"Destination XML file: {destination_xml_path}",
-                                              font=("Arial", 10, "bold"), fg="red", bg="white")
-            destination_file_label.pack(pady=10)
-
             connection_type.trace("w", on_connection_type_change)
 
             create_exit_back_buttons(menu_frame)
