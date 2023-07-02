@@ -1,11 +1,11 @@
+from tkinter import messagebox
+
 from utils.excel_utils import *
 import lxml.etree as le
 import uuid
 import uuid
 import xml.etree.ElementTree as ET
 from utils.console import *
-
-
 
 
 # Function to regenerate UUIDs for workspaces
@@ -111,267 +111,26 @@ def regenerate_uuids_export_excel(xml_file_path):
         display_error(f"An error occurred while processing the XML file: {str(e)}")
 
 
-def add_systems_to_xml(xml_file_path, xml_file_path_destination):
-    # Show Warning
-    print("Warning: This function will add a system from your existing SAP Logon XML file to another XML file.")
-    print("Please make sure that the system you want to add is already added to your existing XML file by SAP Logon")
-    print("Please make sure that the destination XML file has the right structure.\n")
-    print("----------------------------------------")
-    print("Parsing XML file...")
-    print("----------------------------------------")
-    # Parse the XML file
-    tree = ET.parse(xml_file_path)
-    root = tree.getroot()
-    print("Choose the connection type of the system you want to add:")
-    print("1. Custom Application Server")
-    print("2. Group/Server Selection\n")
+# Function to add a new custom application server type of system to xml file
+def add_custom_system_type(xml_file_path_source, xml_file_path_destination, description, applicationServer, instanceNumber, systemID, SAPRouterString):
+    try:
+        # Parse the source XML file
+        tree = ET.parse(xml_file_path_source)
+        root = tree.getroot()
+        # Parse the destination XML file
+        tree_destination = ET.parse(xml_file_path_destination)
+        root_destination = tree_destination.getroot()
 
-    choice = int(input("Enter your choice (1 or 2): "))
+        
 
-    while choice not in [1, 2]:
-        print("Invalid choice. Please enter 1 or 2.")
-        choice = int(input("Enter your choice (1 or 2): "))
 
-    if choice == 1:
-        while True:
-            print("\nEnter the SAP System information:")
-            # Prompt user for necessary information
-            description = input("Description: ")
-            applicationServer = input("*Application Server: ")
-            instanceNumber = input("*Instance Number: ")
-            systemID = input("*System ID: ")
-            SAPRouterString = input("SAP Router String: ")
 
-            # Check if mandatory fields are empty
-            if not applicationServer.strip() or not instanceNumber.strip() or not systemID.strip():
-                print("Mandatory fields cannot be left blank. Please try again.")
-                continue  # Restart the loop
 
-            # Find the SAP system from the root xml file
-            print("Processing XML file...")
-            sap_system = None
 
-            # Find the SAP system
-            server_address = applicationServer + ":32" + instanceNumber
 
-            if not description.strip():
-                for service in root.findall(".//Service"):
-                    if service.get('server') == server_address and service.get('systemid') == systemID:
-                        sap_system = service
-                        break
-            else:
-                for service in root.findall(".//Service"):
-                    if service.get('server') == server_address and service.get('systemid') == systemID and service.get(
-                            'name') == description:
-                        sap_system = service
-                        break
 
-            if sap_system is None:
-                print("The SAP system you are trying to add does not exist in your root SAP Logon XML file.")
-                add_system = input("Do you want to try again? (y/n): ")
-                if add_system.lower() == 'n':
-                    break  # Exit the loop if the user chooses not to try again
-                continue  # Restart the loop
-
-            # sap_system = sap_system[0]  # Select the first matched element
-
-            if sap_system.get('type') == 'SAPGUI':
-                print("--------------------------------")
-                print("SAP system found. Information:")
-                system_uuid = sap_system.get('uuid')
-                print("uuid: " + system_uuid)
-                print("name: " + sap_system.get('name'))
-                print("type: " + sap_system.get('type'))
-                print("server: " + sap_system.get('server'))
-                print("systemid: " + sap_system.get('systemid'))
-                routerid = sap_system.get('routerid')
-                msid = sap_system.get('msid')
-                if routerid is not None:
-                    router = root.find(f".//Router[@uuid='{routerid}']")
-                    print("uuid: " + router.get('uuid'))
-                    print("router: " + router.get('router'))
-                elif msid is not None:
-                    messageserver = root.find(f".//Messageserver[@uuid='{msid}']")
-                    print("uuid: " + messageserver.get('uuid'))
-                    print("name: " + messageserver.get('name'))
-                    print("host: " + messageserver.get('host'))
-                    print("port: " + messageserver.get('port'))
-
-            else:
-                print("----------------------------------")
-                print("SAP System found. Information:")
-                print("uuid: " + sap_system.get('uuid'))
-                print("name: " + sap_system.get('name'))
-                print("description: " + sap_system.get('description'))
-                print("type: " + sap_system.get('type'))
-                print("url: " + sap_system.get('url'))
-                print("client: " + sap_system.get('client'))
-
-            print("----------------------------------")
-            add_system = input("Is this the SAP system you want to add to the central configuration file? (y/n): ")
-            if add_system.lower() == 'y':
-                print("----------------------------------")
-                print("        Adding the system         ")
-                print("----------------------------------")
-                # Parse the destination XML file
-                tree_dest = ET.parse(xml_file_path_destination)
-                root_dest = tree_dest.getroot()
-                # Check if the destination XML file has the right structure
-                if len(root_dest.findall('.//Services')) == 0:
-                    print("The destination XML file does not have the Services element.\n")
-                    print("Adding the Services element...")
-                    services = ET.Element('Services')
-                    root_dest.append(services)
-                    ET.SubElement(services, 'Service')
-                    sap_system.set('uuid', str(uuid.uuid4()))
-                    services.append(sap_system)
-                    print("Services element added...\n")
-                else:
-                    sap_system.set('uuid', str(uuid.uuid4()))
-                    root_dest.find('.//Services').append(sap_system)
-
-                # Check if there is Routers mentioned the SAP system, and they are also in the destination file
-                routerid = sap_system.get('routerid')
-                for router in root.findall(".//Router"):
-                    if router.get('uuid') == routerid:
-                        router_address = router.get('router')
-                        print("The SAP system has a router.")
-                        # Check if there is a routers element in the destination file
-                        if len(root_dest.findall('.//Routers')) == 0:
-                            print(
-                                "The SAP system has a router, but there is no router element in the destination file.")
-                            print("Adding the router element...")
-                            routers = ET.Element('Routers')
-                            root_dest.append(routers)
-                            ET.SubElement(routers, 'Router')
-                            routers.append(router)
-                            print("Router element added...")
-                        else:
-                            for router in root_dest.findall('.//Router'):
-                                # Check if the router is already in the destination file
-                                if router.get('router') != router_address:
-                                    root_dest.find('.//Routers').append(router)
-                                    break
-                # Check if the SAP system is successfully added
-                for service in root_dest.findall(".//Service"):
-                    if service.get('server') == sap_system.get('server') \
-                            and service.get('systemid') == sap_system.get('systemid') \
-                            and service.get('name') == sap_system.get('name'):
-                        print("SAP system added successfully.")
-                        break
-
-                # Check if the xml file has the right structure
-                if len(root_dest.findall('.//Workspaces')) == 0:
-                    print("The destination XML file does not have a Workspaces element.\n")
-                    print("Adding the Workspaces element...")
-                    workspaces = ET.Element('Workspaces')
-                    root_dest.append(workspaces)
-                    workspace = ET.SubElement(workspaces, 'Workspace')
-                    workspace.set('name', 'Default')
-                    workspace.set('uuid', str(uuid.uuid4()))
-                    item = ET.SubElement(workspace, 'Item')
-                    item.set('uuid', sap_system.get('uuid'))
-                    item.set('serviceid', sap_system.get('uuid'))
-                    print("Workspaces element added...\n")
-                else:
-                    workspaces = root_dest.findall('.//Workspace')
-                    # prompt user to select a workspace
-                    print("Please select a workspace to add the SAP system to:")
-                    for i in range(len(workspaces)):
-                        if workspaces[i].get('name') is not None:
-                            print(f"{i + 1}. {workspaces[i].get('name')}")
-
-                    print(f"{len(workspaces) + 1}. Create a new workspace")
-                    while True:
-                        try:
-                            choice = int(input("Enter your choice: "))
-                            if choice > (len(workspaces) + 1) or choice < 1:
-                                print("Invalid choice. Please try again.")
-                                continue
-                            elif choice == len(workspaces) + 1:
-                                # Prompt user to enter the name of the new workspace
-                                new_workspace_name = input("Enter the name of the new workspace: ")
-                                workspace = ET.SubElement(root_dest.find('.//Workspaces'), 'Workspace')
-                                workspace.set('name', new_workspace_name)
-                                workspace.set('uuid', str(uuid.uuid4()))
-                                # Prompt the user if they want to add a new node to the workspace
-                                add_node = input("Do you want to add a new node to the new workspace? (y/n): ")
-                                if add_node.lower() == 'y':
-                                    new_node_name = input("Enter the name of the new node: ")
-                                    new_node = ET.SubElement(workspace, 'Node')
-                                    new_node.set('name', new_node_name)
-                                    item = ET.SubElement(new_node, 'Item')
-                                    item.set('uuid', str(uuid.uuid4()))
-                                    item.set('serviceid', sap_system.get('uuid'))
-                                else:
-                                    item = ET.SubElement(workspace, 'Item')
-                                    item.set('uuid', str(uuid.uuid4()))
-                                    item.set('serviceid', sap_system.get('uuid'))
-                                break
-                            else:
-                                workspace = workspaces[choice - 1]
-                                # Prompt user to select a node
-                                print("Please select a node to add the SAP system to:")
-                                print(f"Nodes in {workspace.get('name')} workspace:")
-                                nodes = workspace.findall('.//Node')
-                                child_nodes = workspace.findall('.//Node/Node')
-                                for i, node in enumerate(nodes):
-                                    if node not in child_nodes:
-                                        print(f"{i + 1}. {node.get('name')}")
-                                        for j, child_node in enumerate(node.findall('.//Node')):
-                                            print("-" + f"{j + i + 1 + 1}. {node.get('name')}/{child_node.get('name')}")
-
-                                print(f"{len(nodes) + 1}. Create a new node")
-                                while True:
-                                    try:
-                                        choice = int(input("Enter your choice: "))
-                                        if choice > (len(nodes) + 1) or choice < 1:
-                                            print("Invalid choice. Please try again.")
-                                            continue
-                                        elif choice == len(nodes) + 1:
-                                            # Prompt user to enter the name of the new node
-                                            new_node_name = input("Enter the name of the new node: ")
-                                            new_node = ET.SubElement(workspace, 'Node')
-                                            new_node.set('name', new_node_name)
-                                            item = ET.SubElement(new_node, 'Item')
-                                            item.set('uuid', str(uuid.uuid4()))
-                                            item.set('serviceid', sap_system.get('uuid'))
-                                            break
-                                        else:
-                                            node = nodes[choice - 1]
-                                            item = ET.SubElement(node, 'Item')
-                                            item.set('uuid', str(uuid.uuid4()))
-                                            item.set('serviceid', sap_system.get('uuid'))
-                                            break
-                                    except ValueError:
-                                        print("Invalid choice. Please try again.")
-                                        continue
-
-                                break
-                        except ValueError:
-                            print("Invalid choice. Please try again.")
-                            continue
-
-                # Prompt user for output file path and name
-                output_file_path = input("Enter the output file path: ")
-                output_file_name = input("Enter the output file name: ")
-                output_file = os.path.join(output_file_path, output_file_name + ".xml")
-                tree_dest.write(output_file)
-                print(f"XML file saved successfully at {output_file}")
-
-            elif add_system.lower() == 'n':
-                print("----------------------------------")
-                print("        Please try again.         ")
-                print("----------------------------------")
-                continue  # Restart the loop to ask for information again
-
-            break  # Exit the loop if the system is confirmed to be added
-
-    elif choice == 2:
-        # Handle choice 2
-        print("Choice 2 is selected. Implement the logic for Group/Server Selection.")
-
-    # Continue with the rest of your code
+    except Exception as e:
+        display_error(f"An error occurred while adding the custom system type to the XML file: {str(e)}")
 
 
 def extract_from_nodes(xml_file_path):
@@ -459,8 +218,6 @@ def get_stats(xml_file_path):
     }
 
     return stats
-
-
 
 
 # Function to remove duplications in the XML file

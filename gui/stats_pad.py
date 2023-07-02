@@ -1,71 +1,51 @@
+from tkinter import messagebox, filedialog
+
+
+from utils.xml_utils import get_stats
 import tkinter as tk
-import tkinter.filedialog as filedialog
-import xml.etree.ElementTree as ET
-from tkinter import ttk
-import customtkinter
-
-from gui.main_menu import *
 
 
-def show_stats_window(menu_frame, description_label, menu_label):
+def show_stats_window(menu_frame):
+    from gui.menu import clear_frame, create_exit_back_buttons
+    # Clear the main window
     clear_frame(menu_frame)
 
-    file_path = filedialog.askopenfilename(filetypes=[("XML Files", "*.xml")])
-    if file_path:
-        get_stats(file_path)
-        item_list = get_stats(file_path).items()
-        try:
-            stats_frame = tk.Frame(menu_frame, bg="white")
-            stats_frame.pack(pady=20)
-
-            stats_label = tk.Label(stats_frame, text="Statistics", font=("Arial", 16, "bold"), bg="white")
+    def show_stats():
+        xml_file_path = xml_path_entry.get()
+        if xml_file_path.endswith('.xml'):
+            clear_frame(menu_frame)  # Clear the window
+            file_label = tk.Label(menu_frame, text=f"Statistics: ", font=("Arial", 14, "bold"), bg="white")
+            file_label.pack(pady=10)
+            stats = get_stats(xml_file_path)
+            stats_text = "\n".join([f"{k}: {v}" for k, v in stats.items()])
+            stats_label = tk.Label(menu_frame, text=stats_text, font=("Arial", 14), bg="white")
             stats_label.pack(pady=10)
+            create_exit_back_buttons(menu_frame)
+        else:
+            messagebox.showwarning("Invalid File Warning", "Please put the address of an XML file")
 
-            style = ttk.Style()
-            style.configure("Treeview", font=("Arial", 12), rowheight=30)
-            style.configure("Treeview.Heading", font=("Arial", 12, "bold"))
+    def select_xml_file():
+        xml_file_path = filedialog.askopenfilename(initialdir="/", title="Select file",
+                                                   filetypes=(("xml files", "*.xml"), ("all files", "*.*")))
+        if xml_file_path:
+            xml_path_entry.delete(0, tk.END)  # Clear the entry field
+            xml_path_entry.insert(tk.END, xml_file_path)  # Insert the selected file path
 
-            stats_table = ttk.Treeview(stats_frame, columns=("Category", "Count"), show="headings", height=10,
-                                       style="Treeview")
-            stats_table.column("Category", width=300)
-            stats_table.column("Count", width=150)
-            stats_table.heading("Category", text="Category", anchor=tk.CENTER)
-            stats_table.heading("Count", text="Count", anchor=tk.CENTER)
+    file_label = tk.Label(menu_frame, text="Please put the address of an XML file", font=("Arial", 14, "bold"),
+                          bg="white")
+    file_label.pack(pady=10)
 
-            for category, count in item_list:
-                stats_table.insert("", "end", values=(category, count))
+    entry_frame = tk.Frame(menu_frame)
+    entry_frame.pack(pady=10)
 
-            stats_table.pack()
+    xml_path_entry = tk.Entry(entry_frame, width=50)  # Entry widget to input XML file path
+    xml_path_entry.pack(side='left')
 
-            def go_back():
-                clear_frame(stats_frame)
+    browse_button = tk.Button(entry_frame, text="Browse", command=select_xml_file, background="black",foreground="white")
+    browse_button.pack(side='left', padx=5)
 
-            def exit_program():
-                root_tk.destroy()
+    show_stats_button = tk.Button(entry_frame, text="Show Stats", command=show_stats, background="black",foreground="white")
+    show_stats_button.pack(side="left", pady=5)
 
-            # Create the back button
-            back_button = customtkinter.CTkButton(
-                master=stats_frame,
-                fg_color=("black", "black"),
-                text="Back",
-                command=go_back
-            )
-            back_button.pack(side=tk.LEFT, padx=10, pady=10)
+    create_exit_back_buttons(menu_frame)
 
-            # Create the exit button
-            exit_button = customtkinter.CTkButton(
-                master=stats_frame,
-                fg_color=("black", "black"),
-                text="Exit",
-                command=exit_program
-            )
-            exit_button.pack(side=tk.RIGHT, padx=10, pady=10)
-
-        except Exception as e:
-            error_label = tk.Label(menu_frame, text=f"An error occurred while processing the XML file:\n{str(e)}",
-                                   font=("Arial", 12), bg="white")
-            error_label.pack(pady=20)
-
-    # Remove the description and menu options
-    description_label.pack_forget()
-    menu_label.pack_forget()
