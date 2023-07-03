@@ -6,6 +6,9 @@ import uuid
 import uuid
 import xml.etree.ElementTree as ET
 from utils.console import *
+from utils.excel_utils import generate_excel_files
+import pandas as pd
+
 
 
 # Function to regenerate UUIDs for workspaces
@@ -112,25 +115,33 @@ def regenerate_uuids_export_excel(xml_file_path):
 
 
 # Function to add a new custom application server type of system to xml file
-def add_custom_system_type(xml_file_path_source, xml_file_path_destination, applicationServer, instanceNumber, systemID):
+# Your find_custom_system() function is updated to return None when no service is found
+def find_custom_system(xml_file_path, applicationServer, instanceNumber,
+                       systemID):
     try:
+        server_address = applicationServer + ":32" + instanceNumber
+        sap_system = None
         # Parse the source XML file
-        tree = ET.parse(xml_file_path_source)
+        tree = ET.parse(xml_file_path)
         root = tree.getroot()
-        # Parse the destination XML file
-        tree_destination = ET.parse(xml_file_path_destination)
-        root_destination = tree_destination.getroot()
 
-
-
-
-
-
-
-
-
+        for service in root.findall(".//Service"):
+            if service.get('server') == server_address and service.get('systemid') == systemID:
+                sap_system = service
+                break
+        return sap_system
     except Exception as e:
-        display_error(f"An error occurred while adding the custom system type to the XML file: {str(e)}")
+        messagebox.showwarning("Error in find_custom_system():", str(e))
+        return None
+
+
+def find_router(xml_file_path, routerid):
+    # Parse the source XML file
+    tree = ET.parse(xml_file_path)
+    root = tree.getroot()
+    for router in root.findall(".//Router"):
+        if router.get('uuid') == routerid:
+            return router
 
 
 def extract_from_nodes(xml_file_path):

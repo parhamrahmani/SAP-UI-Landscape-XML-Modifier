@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import customtkinter
 
-from utils.xml_utils import add_custom_system_type
+from utils.xml_utils import find_custom_system, find_router
 
 
 def add_system_window(menu_frame):
@@ -36,12 +36,14 @@ def add_system_window(menu_frame):
 
             # create radio buttons for choosing the connection type
             connection_type = tk.IntVar()
-            radiobutton_1 = tk.Radiobutton(menu_frame, bg="white",fg="black", text="1. Custom Application Server",font=("Arial", 12, "bold") , variable=connection_type,
+            radiobutton_1 = tk.Radiobutton(menu_frame, bg="white", fg="black", text="1. Custom Application Server",
+                                           font=("Arial", 12, "bold"), variable=connection_type,
                                            value=1)
-            radiobutton_1.pack(pady=5,  anchor='center')
-            radiobutton_2 = tk.Radiobutton(menu_frame,bg="white",fg="black",  text="2. Group/Server Selection", font=("Arial", 12, "bold") ,variable=connection_type,
+            radiobutton_1.pack(pady=5, anchor='center')
+            radiobutton_2 = tk.Radiobutton(menu_frame, bg="white", fg="black", text="2. Group/Server Selection",
+                                           font=("Arial", 12, "bold"), variable=connection_type,
                                            value=2)
-            radiobutton_2.pack(pady=5,  anchor='center')
+            radiobutton_2.pack(pady=5, anchor='center')
 
             # Create a separate frame to contain the form
             form_frame = tk.Frame(menu_frame, bg='white')
@@ -75,13 +77,70 @@ def add_system_window(menu_frame):
             # Initially hide the form
             form_frame.pack_forget()
 
+            def system_adding_tab(frame):
+                clear_frame(frame)
+
+                # Add your new tab's content here
+                new_tab_content = tk.Label(frame, text="Welcome to the new tab!")
+                new_tab_content.pack()
+
+
+
+            def go_to_xml_input(frame):
+                clear_frame(frame)
+                add_system_window(frame)  # This will take the user back to the XML file paths input
+
+            def get_sap_system(frame):
+                try:
+                    sap_system = find_custom_system(source_xml_path,
+                                                    applicationServer_entry.get(),
+                                                    instanceNumber_entry.get(),
+                                                    systemID_entry.get())
+                    # Create a field to display the message
+                    message_field = tk.Frame(frame, bg='white')
+                    message_label = tk.Label(message_field, text="Is this the SAP System you want to add?", bg='white',
+                                             fg='black', font=("Arial", 12))
+                    message_label.pack(pady=5)
+                    if sap_system is not None:
+                        name_label = tk.Label(message_field, text=f"Description: {sap_system.get('name')}", bg='white',
+                                              fg='black', font=("Arial", 12))
+                        name_label.pack(pady=5)
+                        server_label = tk.Label(message_field, text=f"Server Address: {sap_system.get('server')}",
+                                                bg='white', fg='black',
+                                                font=("Arial", 12))
+                        server_label.pack(pady=5)
+                        system_label = tk.Label(message_field, text=f"System ID: {sap_system.get('systemid')}",
+                                                bg='white', fg='black',
+                                                font=("Arial", 12))
+                        system_label.pack(pady=5)
+                        routerid = sap_system.get('routerid')
+                        if routerid is not None:
+                            router = find_router(source_xml_path, routerid)
+                            router_address = router.get('name')
+                            router_label = tk.Label(message_field, text=f"Router: {router_address}", bg='white',
+                                                    fg='black',
+                                                    font=("Arial", 12))
+                            router_label.pack(pady=5)
+                        # Buttons for user's response
+                        yes_button = tk.Button(message_field, text='Yes', command=lambda: system_adding_tab(frame))
+                        no_button = tk.Button(message_field, text='No', command=lambda: go_to_xml_input(frame))
+
+                        yes_button.pack(side='left', padx=10)
+                        no_button.pack(side='right', padx=10)
+
+                    else:
+                        server_label = tk.Label(message_field, text="No matching system found", bg='white', fg='black',
+                                                font=("Arial", 12))
+                        server_label.pack(pady=5)
+                    message_field.pack(pady=10)
+                except Exception as e:
+                    messagebox.showwarning("Error in get_sap_system():", str(e))
+
             def on_connection_type_change(*args):
                 if connection_type.get() == 1:
                     form_frame.pack()  # Show the form
-                    next_button.config(command=lambda: add_custom_system_type(source_xml_path, destination_xml_path,
-                                                                              applicationServer_entry.get(),
-                                                                              instanceNumber_entry.get(),
-                                                                              systemID_entry.get()))
+                    next_button.config(command=lambda: get_sap_system(menu_frame))
+
                 elif connection_type.get() == 2:
                     form_frame.pack_forget()  # Hide the form
                     next_button.config(command=None)
