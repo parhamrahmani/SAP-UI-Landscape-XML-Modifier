@@ -1,31 +1,31 @@
-
 import tkinter as tk
-from gui.menu import clear_frame, create_exit_restart_buttons
-from utils.xml_utils import regenerate_uuids_export_excel, select_xml_file
+from utils.xml_utils import remove_duplicates, select_xml_file
 
 
-def regenerate_uuids_with_excel_report(menu_frame):
+def remove_duplications_window(menu_frame):
     """
-        Shows a window that allows users to select an XML file. The selected XML file undergoes uuid regeneration
-        and the changes are recorded in an Excel report. This helps in converting local landscape XML files
-        to a global landscape XML file.
+       Function to create a GUI window for removing duplications from an XML file.
 
-        Args:
-            menu_frame (tk.Frame): The frame where the uuid regeneration window will be displayed.
-        """
+       The function presents a brief description, a warning message, and file selection option
+       to the user. On clicking "Submit", the remove_duplicates function from xml_utils is invoked.
 
+       Args:
+           menu_frame (tkinter.Frame): Frame widget in which the remove duplication UI is built.
+       """
     # Clear the main window
+
+    from gui.menu import clear_frame
+
     clear_frame(menu_frame)
 
     description_label = tk.Label(
         menu_frame,
         text="Warnings:\n\n"
-             "1. This function will regenerate the uuids of services and items\n"
-             "in your SAP UI Local Landscape Files (XML files), In order to make\n"
-             "to make it usable as a Global Landscape File (XML file).\n\n"
-             "2. This function will also remove any inclusions of SAPUIGlobalLandscape.xml\n"
-             "in your output file, in order to make it usable as a global/central file and avoid errors \n\n"
-             "3. This function will also generate an excel report of the changes made to the XML file\n\n",
+             "1. This function will remove duplications in your landscape files\n\n"
+             "2. Parameters to recognize the duplications (if all true simultaneously):\n"
+             " -Duplicate Application Server and Instance Number\n"
+             " -Duplicate System ID\n"
+             "\n3. This function will take up to several minutes to process depending on your system.\n",
         font=("Arial", 10, "bold"),
         bg="white",
         anchor='w',
@@ -53,9 +53,11 @@ def regenerate_uuids_with_excel_report(menu_frame):
                               foreground="white")
     browse_button.pack(side='left', padx=5)
 
-    regenerate_uuids_button = tk.Button(entry_frame, text="Submit",
-                                        command=lambda: regenerate_uuids_export_excel(xml_path_entry.get()),
-                                        background="black", foreground="white")
+    remove_duplications_button = tk.Button(entry_frame, text="Submit",
+                                           command=lambda: remove_duplicates(xml_path_entry.get()),
+                                           background="black",
+                                           foreground="white")
+    remove_duplications_button.pack(side='left', padx=5)
+    from gui.menu import create_exit_restart_buttons
 
-    regenerate_uuids_button.pack(side="left", pady=5)
     create_exit_restart_buttons(menu_frame)

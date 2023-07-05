@@ -1,17 +1,16 @@
 import logging
 from tkinter import ttk
 import tkinter as tk
-
 from tkinter import filedialog, messagebox
-import customtkinter
-from tkinter import simpledialog
 from utils.xml_utils import find_custom_system, find_router, list_all_workspaces, \
     list_nodes_of_workspace, add_custom_system
 
 
-
 def add_system_window(menu_frame):
     def select_source_xml_file():
+        """
+           Opens a dialog to select a source XML file, and updates 'xml_path_entry' with the file path.
+           """
         xml_file_path = filedialog.askopenfilename(initialdir="/", title="Select source XML file",
                                                    filetypes=(("xml files", "*.xml"), ("all files", "*.*")))
         if xml_file_path:
@@ -19,6 +18,9 @@ def add_system_window(menu_frame):
             xml_path_entry.insert(tk.END, xml_file_path)  # Insert the selected file path
 
     def select_destination_xml_file():
+        """
+            Opens a dialog to select a destination XML file, and updates 'xml_path_entry2' with the file path.
+            """
         xml_file_path = filedialog.askopenfilename(initialdir="/", title="Select destination XML file",
                                                    filetypes=(("xml files", "*.xml"), ("all files", "*.*")))
         if xml_file_path:
@@ -26,6 +28,10 @@ def add_system_window(menu_frame):
             xml_path_entry2.insert(tk.END, xml_file_path)  # Insert the selected file path
 
     def proceed_to_next():
+        """
+            Validates the XML paths and guides the user through selecting a connection type, entering system info, and
+            selecting workspace and node to add the system to. Also handles warnings and errors.
+            """
         source_xml_path = xml_path_entry.get()
         destination_xml_path = xml_path_entry2.get()
 
@@ -61,27 +67,27 @@ def add_system_window(menu_frame):
             form_frame.pack(pady=40)
 
             # Create the form fields
-            applicationServer_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
-            applicationServer_entry.grid(row=0, column=1, padx=5, pady=5, sticky='we')
-            applicationServer_label = tk.Label(form_frame, text="Application Server", bg='white', fg='black',
-                                               font=("Arial", 12))
-            applicationServer_label.grid(row=0, column=0, padx=5, pady=5)
+            application_server_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
+            application_server_entry.grid(row=0, column=1, padx=5, pady=5, sticky='we')
+            application_server_label = tk.Label(form_frame, text="Application Server", bg='white', fg='black',
+                                                font=("Arial", 12))
+            application_server_label.grid(row=0, column=0, padx=5, pady=5)
 
-            instanceNumber_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
-            instanceNumber_entry.grid(row=1, column=1, padx=5, pady=5, sticky='we')
-            instanceNumber_label = tk.Label(form_frame, text="Instance Number", bg='white', fg='black',
-                                            font=("Arial", 12))
-            instanceNumber_label.grid(row=1, column=0, padx=5, pady=5)
+            instance_number_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
+            instance_number_entry.grid(row=1, column=1, padx=5, pady=5, sticky='we')
+            instance_number_label = tk.Label(form_frame, text="Instance Number", bg='white', fg='black',
+                                             font=("Arial", 12))
+            instance_number_label.grid(row=1, column=0, padx=5, pady=5)
 
-            systemID_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
-            systemID_entry.grid(row=2, column=1, padx=5, pady=5, sticky='we')
-            systemID_label = tk.Label(form_frame, text="System ID", bg='white', fg='black', font=("Arial", 12))
-            systemID_label.grid(row=2, column=0, padx=5, pady=5)
+            system_id_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
+            system_id_entry.grid(row=2, column=1, padx=5, pady=5, sticky='we')
+            system_id_label = tk.Label(form_frame, text="System ID", bg='white', fg='black', font=("Arial", 12))
+            system_id_label.grid(row=2, column=0, padx=5, pady=5)
 
             # Configuring the column's weight to ensure they take up the full space
             form_frame.grid_columnconfigure(1, weight=1)
 
-            # Create a button to send infroamtion to the next function
+            # Create a button to send information to the next function
             next_button = tk.Button(form_frame, text="Find SAP System", background="black", foreground="white",
                                     width=40, height=2)
             next_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky='we')
@@ -89,8 +95,19 @@ def add_system_window(menu_frame):
             # Initially hide the form
             form_frame.pack_forget()
 
-
             def system_adding_tab(frame, sap_system):
+                """
+                Creates a new tab in the GUI for adding an SAP system to a workspace and node.
+
+                Parameters
+                ----------
+                frame : tk.Frame
+                    The parent tkinter frame where the new tab will be created.
+
+                sap_system : dict
+                    A dictionary containing SAP system details. The dictionary includes 'name', 'server', 'systemid' and
+                    optional 'routerid' for the system to be added.
+                """
 
                 # Clear the frame
                 clear_frame(frame)
@@ -197,6 +214,12 @@ def add_system_window(menu_frame):
                 # Update nodes when a workspace is selected
                 # Update nodes when a workspace is selected
                 def update_nodes(*args):
+                    """
+                    Updates the node dropdown menu in the GUI when a new workspace is selected. This function is
+                    meant to be used as a callback when the selected workspace changes. It lists all the nodes
+                    associated with the selected workspace, populates them into the node dropdown menu, and enables
+                    or disables the menu based on whether nodes are available.
+                    """
                     nodes = list_nodes_of_workspace(destination_xml_path, selected_workspace.get())
                     node_combobox['values'] = nodes  # Update the values in the Combobox
                     selected_node.set('')  # Clear the selected node value
@@ -211,29 +234,29 @@ def add_system_window(menu_frame):
 
                 # Create a Button for submitting the system to the destination XML file
                 submit_button = tk.Button(tab_frame, text="Submit", font=("Arial", 12, "bold"), fg="white",
-                                          bg="black",padx=10, pady=3, command=lambda: add_custom_system(sap_system, source_xml_path,
-                                                                                        destination_xml_path,
-                                                                                        selected_workspace.get(),
-                                                                                        selected_node.get()))
+                                          bg="black", padx=10, pady=3,
+                                          command=lambda: add_custom_system(sap_system, source_xml_path,
+                                                                            destination_xml_path,
+                                                                            selected_workspace.get(),
+                                                                            selected_node.get()))
 
                 submit_button.grid(row=8, column=0, columnspan=2, pady=10)
 
                 create_exit_restart_buttons(frame)
 
-            def go_to_xml_input(frame):
-                clear_frame(frame)
-                add_system_window(frame)  # This will take the user back to the XML file paths input
-
-                # Create a separate frame for system information
-                message_field = tk.Frame(menu_frame, bg='white')
-                message_field.pack(pady=10)  # Pack it after creation
-
             def get_sap_system(frame):
+                """
+                Fetches details of an SAP system based on input parameters and asks for user confirmation. If the SAP
+                system is found, it fetches the details and presents it to the user in a dialog box. User is asked to
+                confirm if this is the SAP system they want to add. If confirmed, the system is then added to the
+                system adding tab. In case of any exception during this process, it displays a warning message with
+                exception details.
+                """
                 try:
                     sap_system = find_custom_system(source_xml_path,
-                                                    applicationServer_entry.get(),
-                                                    instanceNumber_entry.get(),
-                                                    systemID_entry.get())
+                                                    application_server_entry.get(),
+                                                    instance_number_entry.get(),
+                                                    system_id_entry.get())
                     if sap_system is not None:
                         system_info = f"Description: {sap_system.get('name')}\n\n" \
                                       f"Server Address: {sap_system.get('server')}\n\n" \
@@ -260,6 +283,13 @@ def add_system_window(menu_frame):
                     logging.error(f"Error in get_sap_system(): {str(e)}")
 
             def on_connection_type_change(*args):
+                """
+                   Adjusts the GUI based on the user's chosen connection type.
+                   If the user chooses the first type of connection (represented by 1),
+                   a form is displayed and the "Next" button is configured to retrieve SAP system information.
+                   If the user chooses the second type of connection (represented by 2), the form is hidden
+                   and the "Next" button's action is removed.
+                   """
                 if connection_type.get() == 1:
                     form_frame.pack()  # Show the form
                     # Modify the button command to pass menu_frame as an argument
@@ -288,16 +318,24 @@ def add_system_window(menu_frame):
     description_label = tk.Label(
         menu_frame,
         text="Warnings:\n\n"
-             "1. This function will add a system from your existing SAP Logon XML file\n to another XML file."
-             "\n\n2. Please make sure that the system you want to add is already added to your \nexisting XML file by SAP Logon,"
-             " and the destination XML file has the right structure."
-             "\n\n3. Always make a backup of your XML files before using this function.",
+             "1. This function will move a sap system from your existing SAP UI Landscape file (xml)\n "
+             "to another SAP UI Landscape file."
+             "\n\n2. Please make sure that the system you want to add is already in your \ninput or source XML file,"
+             " and the destination XML file has the right structure.",
         font=("Arial", 10, "bold"),
         bg="white",
         anchor='w',
         justify='left'
     )
     description_label.pack(pady=10)
+    important_warning = tk.Label(menu_frame, text="IMPORTANT: Please make sure to backup your XML file before\n and"
+                                                  " use a copy of it for this function ",
+                                 font=("Arial", 10, "bold"),
+                                 bg="white",
+                                 fg="red",
+                                 anchor='w',
+                                 justify='left')
+    important_warning.pack(pady=10)
 
     file_label = tk.Label(menu_frame, text="\n\nPlease put the address of your source XML file",
                           font=("Arial", 10, "bold"),

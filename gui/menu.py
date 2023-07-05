@@ -1,23 +1,18 @@
 import os
-import tkinter as tk
-import tkinter.filedialog as filedialog
-import xml.etree.ElementTree as ET
-import customtkinter
-import tkinter as tk
 import tkinter.font as tkfont
 import tkinter as tk
-from tkinter import filedialog, messagebox
-
 from gui.add_system_window import add_system_window
+from gui.remove_duplications_window import remove_duplications_window
 from gui.stats_pad import show_stats_window
-
 from utils.excel_utils import export_excel
-from utils.xml_utils import extract_from_nodes, remove_duplicates, regenerate_uuids_export_excel, \
-    get_stats
+from utils.xml_utils import extract_from_nodes
 import sys
 
 
 def restart_program():
+    """
+        Restarts the current python program by re-executing the current Python script with the same arguments.
+        """
     python = sys.executable
     os.execl(python, python, *sys.argv)
 
@@ -28,6 +23,12 @@ BUTTON_FONT_SIZE = 12
 
 
 def clear_frame(frame):
+    """
+        Removes all widgets from the given frame and any nested frames.
+
+        Args:
+            frame (tk.Frame): The frame from which to remove all widgets.
+        """
     for widget in frame.winfo_children():
         widget.destroy()
 
@@ -47,6 +48,12 @@ def clear_frame(frame):
 
 
 def customize_button(button):
+    """
+       Customizes the given button by adjusting its height and font.
+
+       Args:
+           button (tk.Button): The button to customize.
+       """
     # Increase the height of the button
     button.configure(height=BUTTON_HEIGHT)
 
@@ -56,6 +63,12 @@ def customize_button(button):
 
 
 def create_exit_restart_buttons(frame):
+    """
+       Creates Exit and Restart buttons and adds them to the given frame.
+
+       Args:
+           frame (tk.Frame): The frame where the buttons will be added.
+       """
     back_button = tk.Button(
         master=frame,
         text="Restart",
@@ -82,9 +95,15 @@ def create_exit_restart_buttons(frame):
 
 
 def create_main_menu_buttons(menu_frame):
+    """
+        Creates the main menu buttons and adds them to the given frame.
+
+        Args:
+            menu_frame (tk.Frame): The frame where the buttons will be added.
+        """
     add_system_button = tk.Button(
         master=menu_frame,
-        text="Add a new system from your existing XML file to another XML file",
+        text="Add a system from your existing Landscape file to another Landscape file",
         background="black",
         foreground="white",
         width=BUTTON_WIDTH,
@@ -109,19 +128,19 @@ def create_main_menu_buttons(menu_frame):
 
     remove_duplications_button = tk.Button(
         master=menu_frame,
-        text="Remove duplications",
+        text="Remove duplications in your Landscape file",
         background="black",
         foreground="white",
         width=BUTTON_WIDTH,
         height=BUTTON_HEIGHT,
-        command=lambda: remove_duplicates()  # replace with your function
+        command=lambda: remove_duplications_window(menu_frame)  # replace with your function
     )
     customize_button(remove_duplications_button)
     remove_duplications_button.pack(pady=10, fill='both')
 
     export_excel_button = tk.Button(
         master=menu_frame,
-        text="Export Excel Reports",
+        text="Export Excel Reports of your Landscape file",
         background="black",
         foreground="white",
         width=BUTTON_WIDTH,
@@ -132,7 +151,7 @@ def create_main_menu_buttons(menu_frame):
     export_excel_button.pack(pady=10, fill='both')
     show_stats_button = tk.Button(
         master=menu_frame,
-        text="Show the statistics of your XML file",
+        text="Show the statistics of your Landscape file",
         background="black",
         foreground="white",
         width=BUTTON_WIDTH,
@@ -143,7 +162,7 @@ def create_main_menu_buttons(menu_frame):
     show_stats_button.pack(pady=10, fill='both')
     extract_button = tk.Button(
         master=menu_frame,
-        text="Destruct XML file structure into one simple list of items in one workspace",
+        text="Destruct Landscape file structure into one simple list of items in one workspace",
         background="black",
         foreground="white",
         width=BUTTON_WIDTH,
@@ -153,4 +172,16 @@ def create_main_menu_buttons(menu_frame):
     customize_button(extract_button)
     extract_button.pack(pady=10, fill='both')
 
+    footer_warning_frame = tk.Frame(menu_frame, bg="white")
+    footer_warning_frame.pack(side='bottom', fill='both', expand=True)
+
+    important_warning = tk.Label(footer_warning_frame,
+                                 text="IMPORTANT: Please make sure to use a copy your XML file before"
+                                      "using",
+                                 font=("Arial", 10, "bold"),
+                                 bg="white",
+                                 fg="red",
+                                 anchor='w',
+                                 justify='left')
+    important_warning.pack(pady=10)
     create_exit_restart_buttons(menu_frame)

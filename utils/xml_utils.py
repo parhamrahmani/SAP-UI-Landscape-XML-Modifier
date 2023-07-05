@@ -1,7 +1,7 @@
 import logging
 import sys
-from tkinter import messagebox, simpledialog
-
+from tkinter import messagebox, simpledialog, filedialog
+import tkinter as tk
 from utils.excel_utils import *
 import lxml.etree as le
 import uuid
@@ -13,6 +13,18 @@ import pandas as pd
 
 
 # Function to regenerate UUIDs for workspaces
+def select_xml_file(xml_path_entry):
+    """
+        Function for opening a file dialog to select an XML file,
+        and populating the xml_path_entry field with the chosen file's path.
+        """
+    xml_file_path = filedialog.askopenfilename(initialdir="/", title="Select source XML file",
+                                               filetypes=(("xml files", "*.xml"), ("all files", "*.*")))
+    if xml_file_path:
+        xml_path_entry.delete(0, tk.END)  # Clear the entry field
+        xml_path_entry.insert(tk.END, xml_file_path)  # Insert the selected file path
+
+
 def open_folder_containing_file(xml_file_path):
     folder_path = os.path.dirname(xml_file_path)
     os.startfile(folder_path)
@@ -69,15 +81,10 @@ def remove_global_includes(root):
             filtered_includes.append(include)
 
     if len(filtered_includes) < len(includes):
-        prompt_message = "This XML file includes SAPUILandscapeGlobal.xml. In order to make this file " \
-                         "into a central file, this inclusion has to be deleted. Do you want to delete it? (y/n): "
-        remove_includes = get_user_input(prompt_message).lower() == "y"
 
-        if remove_includes:
-            root.findall(".//Includes")[0][:] = filtered_includes
-            return True
-        else:
-            return False
+        root.findall(".//Includes")[0][:] = filtered_includes
+        return True
+
     else:
         return False
 
@@ -115,13 +122,12 @@ def regenerate_uuids_export_excel(xml_file_path):
 
         # Process the XML file and generate Excel files
         general_excel_file, duplicates_excel_file = generate_excel_files(output_file)
-        messagebox.showinfo("Info", "")
+
         messagebox.showinfo("Info", "The XML file has been successfully exported to: \n" + output_file
                             + "\n\n" + "General Excel file generated: \n" + general_excel_file
                             + "\n\n" + "Duplicates Excel file generated: \n" + duplicates_excel_file)
 
         open_folder_containing_file(output_file)
-
 
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
@@ -339,7 +345,7 @@ def get_stats(xml_file_path):
 # Function to remove duplications in the XML file
 def remove_duplicates(xml_file_path):
     try:
-        print("Processing XML file...")
+
         # Parse the XML file
         tree = le.parse(xml_file_path)
         root = tree.getroot()
@@ -391,14 +397,13 @@ def remove_duplicates(xml_file_path):
                 parent = elem.getparent()
                 parent.remove(elem)
 
-        # Prompt user for output file path and name
-        output_file_path = input("Enter the output file path: ")
-        output_file_name = input("Enter the output file name: ")
-
-        # Save the modified XML to the specified location
-        output_file_path_with_name = os.path.join(output_file_path, output_file_name + '.xml')
-        tree.write(output_file_path_with_name)
-        print(f"XML file saved successfully at {output_file_path_with_name}")
+        output_path = os.path.dirname(xml_file_path)
+        output_name = os.path.basename(xml_file_path).split('.')[0] + "_without_duplications"
+        output_file = os.path.join(output_path, output_name + '.xml')
+        tree.write(output_file)
+        messagebox.showinfo("Success!", f"Duplications removed. Output file saved to: {output_file}")
+        open_folder_containing_file(output_file)
 
     except Exception as e:
-        print(f"An error occurred while processing the XML file: {str(e)}")
+        messagebox.showerror("Error", f"An error occurred while removing duplications: {str(e)}")
+        logging.error(f"An error occurred while removing duplications: {str(e)}")
