@@ -98,7 +98,7 @@ py -m ensurepip
 ```
 py -m pip install pandas openpyxl lxml tkinter
 ```
-- After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *main.py* in the gui folder.
+- After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *main.py* in the root folder.
 You should see this when run correctly:
 
 
