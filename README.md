@@ -19,9 +19,13 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 - **Exporting an Excel File of Duplicate Systems:** The program identifies and exports duplicate systems seperately in an excel file, providing better visibility and management of system duplicates.
 
 - **Removing duplications from an SAP UI Landscape File**: This feature helps you eliminate duplications in your landscape files. Here are the parameters used to identify duplications (if all are true at the same time):
-- *Duplicate Application Server and Instance Number:* This means that there are multiple entries with the same application server and instance number in your landscape file.
-- *Duplicate System ID:* This refers to having multiple entries with the same system ID in your landscape file.
-If all three parameters in one system is duplicate, the function will remove it!
+
+  - *Duplicate Application Server and Instance Number:* This means that there are multiple entries with the same application server and instance number in your landscape file.
+
+  - *Duplicate System ID:* This refers to having multiple entries with the same system ID in your landscape file.
+  - 
+  - If all three parameters in one system are duplicates, the function will remove it!
+
 
 ## Warnings
 
