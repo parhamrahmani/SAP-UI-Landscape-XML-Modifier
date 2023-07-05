@@ -95,6 +95,9 @@ py -m pip install pandas openpyxl lxml tkinter
 ```
 - After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *main.py* in the gui folder.
 You should see this when run correctly:
+
+
+
 ![alt text](https://github.com/parhamrahmani/SAP-UI-Landscape-XML-Modifier/blob/master/main_menu_screenshot.png)
 
 
