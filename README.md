@@ -1,20 +1,16 @@
 
 ## SAP UI Landscape XML Modifier v0.1.0
 
-The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP UI Landscape XML "Local" files into "Centralized/Global" landscape files. It provides various functionalities to regenerate UUIDs for workspaces, nodes, services, and items, as well as the option to remove includes and rename workspaces. This programme is useful for customising and managing SAP UI Landscape XML files according to specific requirements.
+The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP UI Landscape XML "Local" files into "Centralized/Global" landscape files. It provides various functionalities like adding systms from your local xml configuration file into another xml configuartion file, regenerating UUIDs for workspaces, nodes, services, and items, as well as the option to remove inclusions of SAPUILandscapeGlobal from your local file, in order to make it usable as a central file. This programme is useful for customising and managing SAP UI Landscape XML files according to specific requirements.
 
 
 
 
 ## Features
 
-- ***Regenerate UUIDs:*** The programme allows you to regenerate UUIDs for workspaces, nodes, services, and items. This prevents errors and possible interferences between local and the global file.
+-***Add Systems from a Landscape xml file into another one*** This feature allows you to easily copy a SAP system/connection from one SAP landscape XML file and move it to another SAP UI landscape file. It's helpful when you have separate XML files for different environments and want to add a system from one environment to another *without directly editing the XML file*. It's also useful for adding a new system to the central/global SAP UI Landscape file. Normally, these global files are read-only in SAP Logon, requiring manual system addition using SLMT or XML editing, which can be inconvenient. 
 
-- ***Rename Workspaces:*** You can rename workspaces within the XML file. This feature is particularly useful when you want to make the XML file usable as a central file. (Renaming the "Local" workspace is a necessity for making a global config file)
-
-- ***Update Service IDs:*** The programme updates the service IDs of items based on the regenerated UUIDs of services. This ensures proper referencing and consistency within the XML file.
-
-- ***Remove SAPUILandscapeGlobal Inclusions:*** If the XML file includes "SAPUILandscapeGlobal.xml", the programme provides an option to remove this inclusion. This is necessary to make the XML file a central file that can be used independently.
+- ***Regenerate UUIDs and Remove SAPUILandscapeGlobal Inclusions:*** The programme allows you to regenerate UUIDs for workspaces, nodes, services, and items. This prevents errors and possible interferences between local and the global file.If the XML file includes "SAPUILandscapeGlobal.xml", the programme provides an option to remove this inclusion. This is necessary to make the XML file a central file that can be used independently.
 
 - ***Exporting an Excel file of all SAP systems:*** Information exported is node names, system names, SID, system types, system URL (for FIORI or NWBC types) or server address, router address, etc.
 
@@ -22,10 +18,17 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 
 - **Exporting an Excel File of Duplicate Systems:** The program identifies and exports duplicate systems seperately in an excel file, providing better visibility and management of system duplicates.
 
+- **Removing duplications from an SAP UI Landscape File**: This feature helps you eliminate duplications in your landscape files.
+
+Here are the parameters used to identify duplications (if all are true at the same time):
+*Duplicate Application Server and Instance Number:* This means that there are multiple entries with the same application server and instance number in your landscape file.
+*Duplicate System ID:* This refers to having multiple entries with the same system ID in your landscape file.
+If all three parameters in one system is duplicate, the function will remove it!
+
 ## Warnings
 
 - This programme is still in beta and may contain bugs. Please report any bugs or issues you encounter.
-- Please make sure you have the standard hierarchy of data in your XML file. Based on [SAP's documentation](https://www.bing.com/ck/a?!&&p=e846a0c56aad6c19JmltdHM9MTY4Njg3MzYwMCZpZ3VpZD0yMWE5YzQxMS05MzNmLTYzOWQtMGRkMy1kNmY5OTIwNzYyZDYmaW5zaWQ9NTE5Nw&ptn=3&hsh=3&fclid=21a9c411-933f-639d-0dd3-d6f9920762d6&psq=sap+ui+landscape+file+configuration+&u=a1aHR0cHM6Ly9oZWxwLnNhcC5jb20vZG9jL2RmNWY3NTJlYjQwMDRiMmM5ZWNhYjc2OWM5ZjcxMjA4Lzc2MC4wMS9lbi1VUy9zYXBfdWlfbGFuZHNjYXBlX2NvbmZfZ3VpZGUucGRm&ntb=1), the hierarchy is as follows:
+- Please make sure you have the standard hierarchy of data in your XML file. Based on [SAP's documentation](https://www.bing.com/ck/a?!&&p=e846a0c56aad6c19JmltdHM9MTY4Njg3MzYwMCZpZ3VpZD0yMWE5YzQxMS05MzNmLTYzOWQtMGRkMy1kNmY5OTIwNzYyZDYmaW5zaWQ9NTE5Nw&ptn=3&hsh=3&fclid=21a9c411-933f-639d-0dd3-d6f9920762d6&psq=sap+ui+landscape+file+configuration+&u=a1aHR0cHM6Ly9oZWxwLnNhcC5jb20vZG9jL2RmNWY3NTJlYjQwMDRiMmM5ZWNhYjc2OWM5ZjcxMjA4Lzc2MC4wMS9lbi1VUy9zYXBfdWlfbGFuZHNjYXBlX2NvbmZfZ3VpZGUucGRm&ntb=1), the expected hierarchy is as follows:
 ```
 <Landscape>
    <Workspaces>
@@ -56,7 +59,7 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
 </Landscape>
 ```
 
-The programme may not work properly if the hierarchy is not as expected.
+The programme will not work properly if the hierarchy is not as expected.
 
 
 - This programme is not intended to be used for SAP UI Landscape XML files that are already in use. It is recommended to
