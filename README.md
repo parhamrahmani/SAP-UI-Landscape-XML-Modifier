@@ -91,31 +91,11 @@ py -m ensurepip
 ```
 *Install the required packages*
 ```
-py -m pip install pandas openpyxl lxml
+py -m pip install pandas openpyxl lxml tkinter
 ```
-- After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *SAPUILandscape_UUID_Manipulator.py*.
+- After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *main.py* in the gui folder.
 You should see this when run correctly:
-```
-=============================================
-     SAP UI Landscape XML Modifier
-=============================================
+![alt text](https://github.com/parhamrahmani/SAP-UI-Landscape-XML-Modifier/blob/master/main_menu_screenshot.png)
 
-SAP UI Landscape XML Modifier
-This program allows you to modify SAP UI Landscape XML files by regenerating UUIDs for workspaces,
-nodes, services, and items. It also provides the option to remove includes and rename workspaces,
-in order to make them usable as central files.
-```
-
-
-## Usage
-
-- After seeing this message :
-
-```
->> Enter the path to the XML file: 
-```
-Enter the directory of the XML configuration file you want to modify. Use *Copy as Path* option in Windows. Make sure to use a copy of your main local configuration file.
-
-Example: __"C:\Users\User\SAPUILandscapeCopy.xml"__
 
 
