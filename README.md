@@ -23,7 +23,7 @@ The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP U
   - *Duplicate Application Server and Instance Number:* This means that there are multiple entries with the same application server and instance number in your landscape file.
 
   - *Duplicate System ID:* This refers to having multiple entries with the same system ID in your landscape file.
-  - 
+    
   - If all three parameters in one system are duplicates, the function will remove it!
 
 
