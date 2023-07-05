@@ -1,6 +1,6 @@
 
 import tkinter as tk
-from gui.menu import clear_frame, create_exit_restart_buttons
+from ui.menu import clear_frame, create_exit_restart_buttons
 from utils.xml_utils import regenerate_uuids_export_excel, select_xml_file
 
 

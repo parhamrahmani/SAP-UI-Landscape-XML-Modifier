@@ -1,5 +1,6 @@
 import tkinter as tk
-import gui.menu as main_menu
+
+from ui import menu
 
 """
 This script creates a GUI for SAP UI Landscape XML Modifier. 
@@ -27,6 +28,6 @@ if __name__ == "__main__":
     menu_frame = tk.Frame(root_tk, bg="white")
     menu_frame.pack()
 
-    main_menu.create_main_menu_buttons(menu_frame)
+    menu.create_main_menu_buttons(menu_frame)
 
     root_tk.mainloop()

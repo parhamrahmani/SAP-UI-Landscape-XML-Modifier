@@ -2,8 +2,10 @@ import logging
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from utils.xml_utils import find_custom_system, find_router, list_all_workspaces, \
-    list_nodes_of_workspace, add_custom_system
+
+
+from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_custom_system, \
+    find_custom_system
 
 
 def add_system_window(menu_frame):
@@ -311,7 +313,7 @@ def add_system_window(menu_frame):
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
 
-    from gui.menu import clear_frame, create_exit_restart_buttons
+    from ui.menu import clear_frame, create_exit_restart_buttons
     # Clear the main window
     clear_frame(menu_frame)
 

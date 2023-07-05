@@ -34,16 +34,8 @@ def regenerate_workspace_uuids(workspaces):
     for workspace in workspaces:
         workspace.set('uuid', str(uuid.uuid4()))
         workspace.set('expanded', str(0))
-        if workspace.get('name') == "Local":
-            messagebox.showerror("Error", "The workspace name 'Local' in a central file is not allowed! \n"
-                                          " Please enter a new name for the workspace")
-            # Prompt for a new workspace name
-            new_workspace_name = simpledialog.askstring("Enter Workspace Name", "Enter a new name for the workspace:")
-            if new_workspace_name is not None and new_workspace_name != "Local":
-                workspace.set('name', new_workspace_name)
-
-            else:
-                messagebox.showerror("Error", "Input is invalid! \n")
+        if workspace.get('name') == "Local" or workspace.get('name') == "local":
+            workspace.set('name', "Default")
 
 
 # Function to regenerate UUIDs for services and items

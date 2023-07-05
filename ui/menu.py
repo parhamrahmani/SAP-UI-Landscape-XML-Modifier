@@ -1,9 +1,10 @@
 import os
 import tkinter.font as tkfont
 import tkinter as tk
-from gui.add_system_window import add_system_window
-from gui.remove_duplications_window import remove_duplications_window
-from gui.stats_pad import show_stats_window
+from ui.add_system_window import add_system_window
+from ui.remove_duplications_window import remove_duplications_window
+from ui.show_stats_window import show_stats_window
+
 from utils.excel_utils import export_excel
 from utils.xml_utils import extract_from_nodes
 import sys
@@ -113,7 +114,7 @@ def create_main_menu_buttons(menu_frame):
     customize_button(add_system_button)
     add_system_button.pack(pady=10, fill='both')
 
-    from gui.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
+    from ui.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
     regenerate_uuids_button = tk.Button(
         master=menu_frame,
         text="Regenerate UUIDs and export Excel Reports",

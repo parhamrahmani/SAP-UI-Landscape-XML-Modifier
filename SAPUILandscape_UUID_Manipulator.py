@@ -44,7 +44,7 @@ def main():
         elif choice == '4':
             remove_duplicates(xml_file_path)
         elif choice == '5':
-          print("now in gui")
+          print("now in ui")
         elif choice == '6':
             extract_from_nodes(xml_file_path)
 

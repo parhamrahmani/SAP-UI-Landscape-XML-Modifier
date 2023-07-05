@@ -1,5 +1,4 @@
-from tkinter import messagebox, filedialog
-
+from tkinter import messagebox
 
 from utils.xml_utils import get_stats, select_xml_file
 import tkinter as tk
@@ -14,7 +13,7 @@ def show_stats_window(menu_frame):
      Args:
          menu_frame (tk.Frame): The frame where the statistics window will be displayed.
      """
-    from gui.menu import clear_frame, create_exit_restart_buttons
+    from ui.menu import clear_frame, create_exit_restart_buttons
     # Clear the main window
     clear_frame(menu_frame)
 
@@ -45,13 +44,10 @@ def show_stats_window(menu_frame):
         else:
             messagebox.showwarning("Invalid File Warning", "Please put the address of an XML file")
 
-
-
     description_label = tk.Label(
         menu_frame,
         text="Warnings:\n\n"
-             "1. This function will read your xml file and shows the statistics of your landscape file.\n"
-        ,
+             "1. This function will read your xml file and shows the statistics of your landscape file.\n",
         font=("Arial", 10, "bold"),
         bg="white",
         anchor='w',
@@ -76,11 +72,12 @@ def show_stats_window(menu_frame):
     xml_path_entry = tk.Entry(entry_frame, width=50)  # Entry widget to input XML file path
     xml_path_entry.pack(side='left')
 
-    browse_button = tk.Button(entry_frame, text="Browse", command=lambda : select_xml_file(xml_path_entry), background="black",foreground="white")
+    browse_button = tk.Button(entry_frame, text="Browse", command=lambda: select_xml_file(xml_path_entry),
+                              background="black", foreground="white")
     browse_button.pack(side='left', padx=5)
 
-    show_stats_button = tk.Button(entry_frame, text="Show Stats", command=show_stats, background="black",foreground="white")
+    show_stats_button = tk.Button(entry_frame, text="Show Stats", command=show_stats, background="black",
+                                  foreground="white")
     show_stats_button.pack(side="left", pady=5)
 
     create_exit_restart_buttons(menu_frame)
-

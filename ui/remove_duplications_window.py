@@ -14,7 +14,7 @@ def remove_duplications_window(menu_frame):
        """
     # Clear the main window
 
-    from gui.menu import clear_frame
+    from ui.menu import clear_frame
 
     clear_frame(menu_frame)
 
@@ -58,6 +58,6 @@ def remove_duplications_window(menu_frame):
                                            background="black",
                                            foreground="white")
     remove_duplications_button.pack(side='left', padx=5)
-    from gui.menu import create_exit_restart_buttons
+    from ui.menu import create_exit_restart_buttons
 
     create_exit_restart_buttons(menu_frame)
