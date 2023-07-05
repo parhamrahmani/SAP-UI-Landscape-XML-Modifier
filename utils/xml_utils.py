@@ -1,4 +1,6 @@
-from tkinter import messagebox
+import logging
+import sys
+from tkinter import messagebox, simpledialog
 
 from utils.excel_utils import *
 import lxml.etree as le
@@ -10,18 +12,26 @@ from utils.excel_utils import generate_excel_files
 import pandas as pd
 
 
-
 # Function to regenerate UUIDs for workspaces
-def regenerate_workspace_uuids(workspaces):
-    regenerate_all_uuids = get_user_input("Do you want to regenerate UUIDs for all workspaces? (y/n): ").lower() == "y"
+def open_folder_containing_file(xml_file_path):
+    folder_path = os.path.dirname(xml_file_path)
+    os.startfile(folder_path)
 
+
+def regenerate_workspace_uuids(workspaces):
     for workspace in workspaces:
-        if regenerate_all_uuids or get_user_input(
-                f"Regenerate UUID for workspace '{workspace.get('name')}'? (y/n): ").lower() == "y":
-            workspace.set('uuid', str(uuid.uuid4()))
-            workspace.set('expanded', str(0))
-            new_workspace_name = get_user_input(f"Enter the new name for workspace '{workspace.get('name')}': ")
-            workspace.set('name', new_workspace_name)
+        workspace.set('uuid', str(uuid.uuid4()))
+        workspace.set('expanded', str(0))
+        if workspace.get('name') == "Local":
+            messagebox.showerror("Error", "The workspace name 'Local' in a central file is not allowed! \n"
+                                          " Please enter a new name for the workspace")
+            # Prompt for a new workspace name
+            new_workspace_name = simpledialog.askstring("Enter Workspace Name", "Enter a new name for the workspace:")
+            if new_workspace_name is not None and new_workspace_name != "Local":
+                workspace.set('name', new_workspace_name)
+
+            else:
+                messagebox.showerror("Error", "Input is invalid! \n")
 
 
 # Function to regenerate UUIDs for services and items
@@ -88,27 +98,30 @@ def regenerate_uuids_export_excel(xml_file_path):
         regenerate_service_uuids(root)
 
         if remove_global_includes(root):
-            display_success("Global includes removed.")
+            messagebox.showinfo("Info", "The Inclusion of an URL containing 'SAPUILandscapeGlobal.xml' has been "
+                                        "removed.")
         else:
-            print("No include with URL containing 'SAPUILandscapeGlobal.xml' found.")
+            messagebox.showinfo("Info", "The XML file does not include 'SAPUILandscapeGlobal.xml'. No changes "
+                                        "were made.")
 
-        output_path = get_user_input("Enter the output path for the modified XML file: ")
-        output_name = get_user_input("Enter the name for your output file: ")
+        output_path = os.path.dirname(xml_file_path)
+        output_name = os.path.basename(xml_file_path).split('.')[0] + "_modified"
         output_file = os.path.join(output_path, output_name + '.xml')
+
         for elem in root.iter('address'):
             elem.text = output_file
 
         tree.write(output_file)
-        display_success(f"Modified XML file saved as: {output_file}")
-
-        # Exporting the XML file
-        display_loading_bar()
-        time.sleep(1)  # Simulating export delay
 
         # Process the XML file and generate Excel files
         general_excel_file, duplicates_excel_file = generate_excel_files(output_file)
-        print("General Excel file generated:", general_excel_file)
-        print("Duplicates Excel file generated:", duplicates_excel_file)
+        messagebox.showinfo("Info", "")
+        messagebox.showinfo("Info", "The XML file has been successfully exported to: \n" + output_file
+                            + "\n\n" + "General Excel file generated: \n" + general_excel_file
+                            + "\n\n" + "Duplicates Excel file generated: \n" + duplicates_excel_file)
+
+        open_folder_containing_file(output_file)
+
 
     except Exception as e:
         display_error(f"An error occurred while processing the XML file: {str(e)}")
@@ -142,6 +155,98 @@ def find_router(xml_file_path, routerid):
     for router in root.findall(".//Router"):
         if router.get('uuid') == routerid:
             return router
+
+
+def list_all_workspaces(xml_file_path):
+    try:
+        # Parse the destination XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        workspaces = root.findall(".//Workspace")
+
+        return workspaces
+
+    except Exception as e:
+        messagebox.showwarning("Error in list_all_workspaces():", str(e))
+        logging.error(f"Error in list_all_workspaces(): {str(e)}")
+        return None
+
+
+def list_nodes_of_workspace(xml_file_path, workspace_name):
+    try:
+        # Parse the destination XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        workspaces = root.findall(".//Workspace")
+        node_names = []
+        for ws in workspaces:
+            if ws.get('name') == workspace_name:
+                for node in ws.findall(".//Node"):
+                    node_names.append(node.get('name'))
+        return node_names
+    except Exception as e:
+        messagebox.showwarning("Error in list_nodes_of_workspace():", str(e))
+        logging.error(f"Error in list_nodes_of_workspace(): {str(e)}")
+        return []  # Return an empty list instead of None
+
+
+def add_custom_system(sap_system, root_xml_path, destination_xml_path, workspace_name, node_name):
+    try:
+        status = False
+        # Parse the destination XML file
+        tree = ET.parse(destination_xml_path)
+        root = tree.getroot()
+        # Parse the root XML file
+        source_tree = ET.parse(root_xml_path)
+        source_root = source_tree.getroot()
+        # Add service to the destination XML file
+        if len(root.find(".//Services")) == 0:
+            # Should throw exception if no services found
+            raise Exception("No services element found in the destination XML file."
+                            "Please make sure that the destination XML file is a "
+                            "valid SAPUILandscape.xml file.")
+        else:
+            sap_system.set('uuid', str(uuid.uuid4()))
+            root.find(".//Services").append(sap_system)
+        # Check if there is Routers mentioned the SAP system, and they are also in the destination file
+        if sap_system.get('routerid') is not None:
+            for router in source_root.findall(".//Router"):
+                if router.get('uuid') == sap_system.get('routerid'):
+                    # Check if the router is already in the destination file
+                    if find_router(destination_xml_path, router.get('uuid')) is None:
+                        root.find(".//Routers").append(router)
+                        break
+                    break
+        # Creating an Item and adding it to the specified Workspace and Node in the destination XML file
+        for workspace in root.findall(".//Workspace"):
+            if workspace.get('name') == workspace_name:
+                for node in workspace.findall(".//Node"):
+                    if node.get('name') == node_name:
+                        item = ET.SubElement(node, 'Item')
+                        item.set('uuid', sap_system.get('uuid'))
+                        item.set('serviceid', sap_system.get('uuid'))
+        # Save the destination XML file
+        tree.write(destination_xml_path)
+        # Check if the sap system is successfully added to the destination XML file
+        for item in root.findall(".//Item"):
+            if item.get('serviceid') == sap_system.get('uuid'):
+                for service in root.findall(".//Service"):
+                    if service.get('uuid') == sap_system.get('uuid'):
+                        status = True
+                        messagebox.showinfo("Success", "The SAP system is successfully added to the destination XML "
+                                                       "file.\n"
+                                                       "Output file: " + destination_xml_path)
+                        if messagebox.askyesno("Question", "Do you want to open the destination XML file?"):
+                            open_folder_containing_file(destination_xml_path)
+                            python = sys.executable
+                            os.execl(python, python, *sys.argv)
+                        return status
+        return status
+
+    except Exception as e:
+        messagebox.showwarning("Error in add_custom_system():", str(e))
+        logging.error(f"Error in add_custom_system(): {str(e)}")
+        return False
 
 
 def extract_from_nodes(xml_file_path):

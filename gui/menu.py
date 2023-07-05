@@ -10,6 +10,7 @@ from tkinter import filedialog, messagebox
 
 from gui.add_system_window import add_system_window
 from gui.stats_pad import show_stats_window
+
 from utils.excel_utils import export_excel
 from utils.xml_utils import extract_from_nodes, remove_duplicates, regenerate_uuids_export_excel, \
     get_stats
@@ -80,7 +81,6 @@ def create_exit_restart_buttons(frame):
     exit_button.pack(side='right', anchor='se', padx=5, pady=5)
 
 
-
 def create_main_menu_buttons(menu_frame):
     add_system_button = tk.Button(
         master=menu_frame,
@@ -94,6 +94,7 @@ def create_main_menu_buttons(menu_frame):
     customize_button(add_system_button)
     add_system_button.pack(pady=10, fill='both')
 
+    from gui.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
     regenerate_uuids_button = tk.Button(
         master=menu_frame,
         text="Regenerate UUIDs and export Excel Reports",
@@ -101,7 +102,7 @@ def create_main_menu_buttons(menu_frame):
         foreground="white",
         width=BUTTON_WIDTH,
         height=BUTTON_HEIGHT,
-        command=lambda: regenerate_uuids_export_excel()  # replace with your function
+        command=lambda: regenerate_uuids_with_excel_report(menu_frame)  # replace with your function
     )
     customize_button(regenerate_uuids_button)
     regenerate_uuids_button.pack(pady=10, fill='both')
@@ -153,8 +154,3 @@ def create_main_menu_buttons(menu_frame):
     extract_button.pack(pady=10, fill='both')
 
     create_exit_restart_buttons(menu_frame)
-
-
-
-
-
