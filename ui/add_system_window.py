@@ -2,8 +2,7 @@ import logging
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox
-
-
+from ui.ui_utils import clear_frame, create_exit_restart_back_buttons
 from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_custom_system, \
     find_custom_system
 
@@ -244,7 +243,7 @@ def add_system_window(menu_frame):
 
                 submit_button.grid(row=8, column=0, columnspan=2, pady=10)
 
-                create_exit_restart_buttons(frame)
+                create_exit_restart_back_buttons(frame)
 
             def get_sap_system(frame):
                 """
@@ -308,12 +307,12 @@ def add_system_window(menu_frame):
             button_frame = tk.Frame(menu_frame)
             button_frame.pack(side="bottom")
             # Create 'Exit' and 'Back' buttons in the button_frame
-            create_exit_restart_buttons(button_frame)
+            create_exit_restart_back_buttons(button_frame)
 
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
 
-    from ui.menu import clear_frame, create_exit_restart_buttons
+
     # Clear the main window
     clear_frame(menu_frame)
 
@@ -330,14 +329,9 @@ def add_system_window(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    important_warning = tk.Label(menu_frame, text="IMPORTANT: Please make sure to backup your XML file before\n and"
-                                                  " use a copy of it for this function ",
-                                 font=("Arial", 10, "bold"),
-                                 bg="white",
-                                 fg="red",
-                                 anchor='w',
-                                 justify='left')
-    important_warning.pack(pady=10)
+    from ui.menu import show_red_warning
+
+    show_red_warning(menu_frame)
 
     file_label = tk.Label(menu_frame, text="\n\nPlease put the address of your source XML file",
                           font=("Arial", 10, "bold"),
@@ -368,4 +362,4 @@ def add_system_window(menu_frame):
                             command=proceed_to_next)
     next_button.pack(pady=10)
 
-    create_exit_restart_buttons(menu_frame)
+    create_exit_restart_back_buttons(menu_frame)
