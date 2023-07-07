@@ -1,4 +1,6 @@
 import tkinter as tk
+
+from ui.ui_utils import show_red_warning, clear_frame, create_exit_restart_back_buttons
 from utils.xml_utils import remove_duplicates, select_xml_file
 
 
@@ -13,8 +15,6 @@ def remove_duplications_window(menu_frame):
            menu_frame (tkinter.Frame): Frame widget in which the remove duplication UI is built.
        """
     # Clear the main window
-
-    from ui.menu import clear_frame
 
     clear_frame(menu_frame)
 
@@ -32,14 +32,8 @@ def remove_duplications_window(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    important_warning = tk.Label(menu_frame, text="IMPORTANT: Please make sure to backup your XML file before\n and"
-                                                  " use a copy of it for this function ",
-                                 font=("Arial", 10, "bold"),
-                                 bg="white",
-                                 fg="red",
-                                 anchor='w',
-                                 justify='left')
-    important_warning.pack(pady=10)
+
+    show_red_warning(menu_frame)
     file_label = tk.Label(menu_frame, text="\n\nPlease put a copy of your local XML file",
                           font=("Arial", 10, "bold"),
                           bg="white")
@@ -58,6 +52,5 @@ def remove_duplications_window(menu_frame):
                                            background="black",
                                            foreground="white")
     remove_duplications_button.pack(side='left', padx=5)
-    from ui.menu import create_exit_restart_buttons
 
-    create_exit_restart_buttons(menu_frame)
+    create_exit_restart_back_buttons(menu_frame)

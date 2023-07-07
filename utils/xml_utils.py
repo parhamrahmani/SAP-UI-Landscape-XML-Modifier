@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from tkinter import messagebox, simpledialog, filedialog
 import tkinter as tk
@@ -7,7 +8,7 @@ import lxml.etree as le
 import uuid
 import uuid
 import xml.etree.ElementTree as ET
-from utils.console import *
+
 from utils.excel_utils import generate_excel_files
 import pandas as pd
 
@@ -122,7 +123,8 @@ def regenerate_uuids_export_excel(xml_file_path):
         open_folder_containing_file(output_file)
 
     except Exception as e:
-        display_error(f"An error occurred while processing the XML file: {str(e)}")
+        messagebox.showerror("Error!", f"An error occurred while processing the XML file: {str(e)}")
+        logging.error(f"An error occurred while processing the XML file: {str(e)}")
 
 
 # Function to add a new custom application server type of system to xml file

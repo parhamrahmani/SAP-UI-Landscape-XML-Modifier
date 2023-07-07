@@ -1,6 +1,6 @@
 
 import tkinter as tk
-from ui.menu import clear_frame, create_exit_restart_buttons
+from ui.ui_utils import clear_frame, create_exit_restart_back_buttons,show_red_warning
 from utils.xml_utils import regenerate_uuids_export_excel, select_xml_file
 
 
@@ -32,14 +32,9 @@ def regenerate_uuids_with_excel_report(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    important_warning = tk.Label(menu_frame, text="IMPORTANT: Please make sure to backup your XML file before\n and"
-                                                  " use a copy of it for this function ",
-                                 font=("Arial", 10, "bold"),
-                                 bg="white",
-                                 fg="red",
-                                 anchor='w',
-                                 justify='left')
-    important_warning.pack(pady=10)
+
+    show_red_warning(menu_frame)
+
     file_label = tk.Label(menu_frame, text="\n\nPlease put a copy of your local XML file",
                           font=("Arial", 10, "bold"),
                           bg="white")
@@ -58,4 +53,5 @@ def regenerate_uuids_with_excel_report(menu_frame):
                                         background="black", foreground="white")
 
     regenerate_uuids_button.pack(side="left", pady=5)
-    create_exit_restart_buttons(menu_frame)
+
+    create_exit_restart_back_buttons(menu_frame)

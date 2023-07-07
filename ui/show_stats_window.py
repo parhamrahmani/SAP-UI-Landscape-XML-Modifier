@@ -1,5 +1,6 @@
 from tkinter import messagebox
 
+from ui.ui_utils import show_red_warning, clear_frame, create_exit_restart_back_buttons
 from utils.xml_utils import get_stats, select_xml_file
 import tkinter as tk
 
@@ -13,7 +14,7 @@ def show_stats_window(menu_frame):
      Args:
          menu_frame (tk.Frame): The frame where the statistics window will be displayed.
      """
-    from ui.menu import clear_frame, create_exit_restart_buttons
+
     # Clear the main window
     clear_frame(menu_frame)
 
@@ -40,7 +41,7 @@ def show_stats_window(menu_frame):
                 stats_label.grid(row=i, column=0, sticky='w')
                 stats_value.grid(row=i, column=1, sticky='w')
 
-            create_exit_restart_buttons(menu_frame)
+            create_exit_restart_back_buttons(menu_frame)
         else:
             messagebox.showwarning("Invalid File Warning", "Please put the address of an XML file")
 
@@ -54,14 +55,8 @@ def show_stats_window(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    important_warning = tk.Label(menu_frame, text="IMPORTANT: Please make sure to backup your XML file before\n and"
-                                                  " use a copy of it for this function ",
-                                 font=("Arial", 10, "bold"),
-                                 bg="white",
-                                 fg="red",
-                                 anchor='w',
-                                 justify='left')
-    important_warning.pack(pady=10)
+
+    show_red_warning(menu_frame)
     file_label = tk.Label(menu_frame, text="Please put the address of an XML file", font=("Arial", 10, "bold"),
                           bg="white")
     file_label.pack(pady=10)
@@ -80,4 +75,4 @@ def show_stats_window(menu_frame):
                                   foreground="white")
     show_stats_button.pack(side="left", pady=5)
 
-    create_exit_restart_buttons(menu_frame)
+    create_exit_restart_back_buttons(menu_frame)
