@@ -1,8 +1,10 @@
 import shutil
 import xml.etree.ElementTree as ET
+from tkinter import messagebox
+
 import pandas as pd
 from utils.xml_utils import *
-from utils.console import *
+
 
 
 def generate_excel_files(xml_file_path):
@@ -146,25 +148,21 @@ def generate_excel_files(xml_file_path):
 
 def export_excel(xml_file_path):
     try:
-
-        print("Please wait while the Excel files are being processed...")
-        print("This may take a few minutes depending on the size of the XML file.")
-        # Process the temporary XML file and generate Excel files
-        display_loading_bar()
+        # Generate the Excel files
         general_excel_file, duplicates_excel_file = generate_excel_files(xml_file_path)
 
-        # Prompt the user for the output file path and name
-        output_path = input("Enter the output file path: ")
-        output_name = input("Enter the output file name: ")
+        output_path = os.path.dirname(xml_file_path)
+        output_name_gen = os.path.basename(xml_file_path).split('.')[0] + "_general"
+        output_name_dupl = os.path.basename(xml_file_path).split('.')[0] + "_duplications"
+        output_file_gen = os.path.join(output_path, output_name_gen + '.xlsx')
+        output_file_dupl = os.path.join(output_path, output_name_dupl + '.xlsx')
+        shutil.move(general_excel_file, output_file_gen)
+        shutil.move(duplicates_excel_file, output_file_dupl)
 
-        # Move the generated Excel files to the desired output path and name
-        new_general_excel_file = os.path.join(output_path, output_name + '.xlsx')
-        new_duplicates_excel_file = os.path.join(output_path, output_name + '_duplicates.xlsx')
-        shutil.move(general_excel_file, new_general_excel_file)
-        shutil.move(duplicates_excel_file, new_duplicates_excel_file)
-
-        print("General Excel file saved to:", new_general_excel_file)
-        print("Duplicates Excel file saved to:", new_duplicates_excel_file)
+        messagebox.showinfo("Success!", f"General Excel Sheet saved to: \n{output_file_gen}\n"
+                                        f"Duplicate System Excel Sheet  saved to: \n{output_file_dupl}")
+        os.startfile(output_path)
 
     except Exception as e:
-        display_error(f"An error occurred while processing the XML file: {str(e)}")
+        messagebox.showerror("Error!", f"Error while generating Excel file: \n{e}")
+        logging.error(f"Error while generating Excel file: \n{e}")
