@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from ui import menu
+
 
 """
 This script creates a GUI for SAP UI Landscape XML Modifier. 
@@ -13,7 +13,7 @@ and not when it is imported as a module.
 """
 
 if __name__ == "__main__":
-
+    from ui import menu
     root_tk = tk.Tk()
     root_tk.geometry("600x650")
     root_tk.resizable(True, True)
