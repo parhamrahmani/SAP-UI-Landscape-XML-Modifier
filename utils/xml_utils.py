@@ -157,6 +157,15 @@ def find_router(xml_file_path, routerid):
             return router
 
 
+def find_message_server(xml_file_path, msid):
+    # Parse the source XML file
+    tree = ET.parse(xml_file_path)
+    root = tree.getroot()
+    for ms in root.findall(".//MessageServer"):
+        if ms.get('uuid') == msid:
+            return ms
+
+
 def list_all_workspaces(xml_file_path):
     try:
         # Parse the destination XML file
@@ -215,6 +224,15 @@ def add_custom_system(sap_system, root_xml_path, destination_xml_path, workspace
                     # Check if the router is already in the destination file
                     if find_router(destination_xml_path, router.get('uuid')) is None:
                         root.find(".//Routers").append(router)
+                        break
+                    break
+        # Check for Message Servers
+        if sap_system.get('msid') is not None:
+            for ms in source_root.findall(".//MessageServer"):
+                if ms.get('uuid') == sap_system.get('msid'):
+                    # Check if the message server is already in the destination file
+                    if find_message_server(destination_xml_path, ms.get('uuid')) is None:
+                        root.find(".//MessageServers").append(ms)
                         break
                     break
         # Creating an Item and adding it to the specified Workspace and Node in the destination XML file
@@ -444,3 +462,148 @@ def remove_duplicates(xml_file_path):
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while removing duplications: {str(e)}")
         logging.error(f"An error occurred while removing duplications: {str(e)}")
+
+
+def list_system_ids_for_group_server_connection_entry(xml_file_path):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        system_ids = []
+
+        for service in root.findall(".//Service"):
+            if service.get('msid') is not None:
+                system_ids.append(service.get('systemid'))
+
+        return system_ids
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while listing system IDs: {str(e)}")
+        logging.error(f"An error occurred while listing system IDs: {str(e)}")
+
+
+def find_message_server_based_on_system_id(xml_file_path, systemid):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        message_server_id = None
+        message_server = None
+        message_servers = root.findall(".//Messageserver")
+        services = root.findall(".//Service")
+
+        for service in services:
+            if service.get('msid') is not None:
+                if service.get('systemid') == systemid:
+                    message_server_id = service.get('msid')
+                    break
+        for ms in message_servers:
+            if ms.get('uuid') == message_server_id:
+                message_server = ms
+                break
+        return message_server
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding message server: {str(e)}")
+        logging.error(f"An error occurred while finding message server: {str(e)}")
+
+
+def get_all_routers(xml_file_path):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        routers = root.findall(".//Router")
+        return routers
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding message server: {str(e)}")
+        logging.error(f"An error occurred while finding message server: {str(e)}")
+
+
+def get_all_urls(xml_file_path):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        services = root.findall(".//Service")
+        urls = []
+        for service in services:
+            # Assuming the service name is also an attribute of the Service node
+            if service.get('url') is not None and service.get('name') is not None:
+                urls.append({'name': service.get('name'), 'url': service.get('url')})
+
+        # Return the list of URLs
+        return urls
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding NWBC/FIORI system urls: {str(e)}")
+        logging.error(f"An error occurred while finding NWBC/FIORI system urls: {str(e)}")
+
+
+def get_all_custom_sap_gui_info(xml_file_path):
+    # Parse the XML file
+    tree = ET.parse(xml_file_path)
+    root = tree.getroot()
+    services = root.findall(".//Service")
+    sap_gui_server_addresses = []
+    sap_gui_system_ids = []
+    sap_gui_instance_numbers = []
+    for service in services:
+        if service.get('type') == 'SAPGUI':
+            if service.get('server') is not None:
+                server = service.get('server')
+                if ':32' in server:
+                    address, port_with_extra_32 = server.split(':')
+                    port = port_with_extra_32.split("32")[1]
+                    sap_gui_server_addresses.append(address)
+                    if port not in sap_gui_instance_numbers:
+                        sap_gui_instance_numbers.append(port)
+                    sap_gui_system_ids.append(service.get('systemid'))
+
+    return sap_gui_server_addresses, sap_gui_instance_numbers, sap_gui_system_ids
+
+
+def find_all_system_ids_based_on_server_address(xml_file_path, server_address, server_instance_number):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        server = server_address + ":32" + server_instance_number
+        system_ids = []
+
+        for service in root.findall(".//Service"):
+            if service.get('server') is not None:
+                if service.get('server') == server:
+                    system_ids.append(service.get('systemid'))
+
+
+        return system_ids
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while listing system IDs: {str(e)}")
+        logging.error(f"An error occurred while listing system IDs: {str(e)}")
+
+
+def find_all_instance_numbers_based_on_server_address(xml_file_path, server_address):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        instance_numbers = []
+
+        for service in root.findall(".//Service"):
+            if service.get('server') is not None:
+                if server_address in service.get('server'):
+                    server = service.get('server')
+                    if ':32' in server:
+                        address, port_with_extra_32 = server.split(':')
+                        port = port_with_extra_32.split("32")[1]
+                        if port not in instance_numbers:
+                            instance_numbers.append(port)
+
+        return instance_numbers
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while listing instance numbers: {str(e)}")
+        logging.error(f"An error occurred while listing instance numbers: {str(e)}")
