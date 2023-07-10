@@ -2,6 +2,8 @@ import logging
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox
+
+from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
 from ui.ui_utils import clear_frame, create_exit_restart_back_buttons
 from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_custom_system, \
     find_custom_system
@@ -41,10 +43,10 @@ def add_system_window(menu_frame):
         else:
             clear_frame(menu_frame)  # Clear the menu_frame
 
-            # create a label for source file
-            source_file_label = tk.Label(menu_frame, text=f"Please select connection type: ",
-                                         font=("Arial", 12, "bold"), fg="black", bg="white")
-            source_file_label.pack(pady=10)
+            # create a label for selecting connection type
+            connection_type_label = tk.Label(menu_frame, text=f"Please select connection type: ",
+                                             font=("Arial", 12, "bold"), fg="black", bg="white")
+            connection_type_label.pack(pady=10)
 
             # create radio buttons for choosing the connection type
             connection_type = tk.IntVar()
@@ -54,47 +56,39 @@ def add_system_window(menu_frame):
 
             radiobutton_1 = tk.Radiobutton(radio_button_frame, bg="white", fg="black",
                                            text="1. Custom Application Server",
-                                           font=("Arial", 12, "bold"), variable=connection_type,
+                                           font=("Arial", 10, "bold"), variable=connection_type,
                                            value=1)
             radiobutton_1.grid(row=0, column=0, padx=10)  # pack replaced with grid
 
             radiobutton_2 = tk.Radiobutton(radio_button_frame, bg="white", fg="black", text="2. Group/Server Selection",
-                                           font=("Arial", 12, "bold"), variable=connection_type,
+                                           font=("Arial", 10, "bold"), variable=connection_type,
                                            value=2)
-            radiobutton_2.grid(row=0, column=1, padx=10)  # pack replaced with grid
+            radiobutton_2.grid(row=0, column=1, padx=10)
+            radiobutton_3 = tk.Radiobutton(radio_button_frame, bg="white", fg="black", text="3. FIORI/NWBC System",
+                                           font=("Arial", 10, "bold"), variable=connection_type,
+                                           value=3)
+            radiobutton_3.grid(row=1, column=0, padx=10)
 
-            # Create a separate frame to contain the form
-            form_frame = tk.Frame(menu_frame, bg='white')
-            form_frame.pack(pady=40)
-
-            # Create the form fields
-            application_server_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
-            application_server_entry.grid(row=0, column=1, padx=5, pady=5, sticky='we')
-            application_server_label = tk.Label(form_frame, text="Application Server", bg='white', fg='black',
-                                                font=("Arial", 12))
-            application_server_label.grid(row=0, column=0, padx=5, pady=5)
-
-            instance_number_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
-            instance_number_entry.grid(row=1, column=1, padx=5, pady=5, sticky='we')
-            instance_number_label = tk.Label(form_frame, text="Instance Number", bg='white', fg='black',
-                                             font=("Arial", 12))
-            instance_number_label.grid(row=1, column=0, padx=5, pady=5)
-
-            system_id_entry = tk.Entry(form_frame, bg='white', fg='black', font=("Arial", 12))
-            system_id_entry.grid(row=2, column=1, padx=5, pady=5, sticky='we')
-            system_id_label = tk.Label(form_frame, text="System ID", bg='white', fg='black', font=("Arial", 12))
-            system_id_label.grid(row=2, column=0, padx=5, pady=5)
+            app_server_entry, instance_num_entry, sys_id_entry, custom_system_form_frame = create_custom_system_form(source_xml_path,
+                menu_frame)
+            system_id_combobox, message_server_entry, sap_router_combobox, group_server_form_frame = create_group_server_form(
+                source_xml_path, menu_frame)
+            fiori_nwbc_name, fiori_nwbc_urls, fiori_nwbc_frame = create_fiori_nwbc_form(source_xml_path, menu_frame)
 
             # Configuring the column's weight to ensure they take up the full space
-            form_frame.grid_columnconfigure(1, weight=1)
+            custom_system_form_frame.grid_columnconfigure(1, weight=1)
 
             # Create a button to send information to the next function
-            next_button = tk.Button(form_frame, text="Find SAP System", background="black", foreground="white",
+            # The command associated with this button is determined by def on_connection_type_change(*args)
+            next_button = tk.Button(custom_system_form_frame, text="Find SAP System", background="black",
+                                    foreground="white",
                                     width=40, height=2)
             next_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky='we')
 
             # Initially hide the form
-            form_frame.pack_forget()
+            custom_system_form_frame.pack_forget()
+            group_server_form_frame.pack_forget()
+            fiori_nwbc_frame.pack_forget()
 
             def system_adding_tab(frame, sap_system):
                 """
@@ -116,9 +110,11 @@ def add_system_window(menu_frame):
                 workspaces = list_all_workspaces(destination_xml_path)
                 system_to_add = sap_system
                 router_bool = False
+                message_server_bool = False
 
                 if sap_system.get('routerid') is not None:
                     router_bool = True
+
 
                 # Create a Frame for the tab
                 tab_frame = tk.Frame(frame, bg='white')
@@ -245,7 +241,7 @@ def add_system_window(menu_frame):
 
                 create_exit_restart_back_buttons(frame)
 
-            def get_sap_system(frame):
+            def get_custom_sap_system(frame):
                 """
                 Fetches details of an SAP system based on input parameters and asks for user confirmation. If the SAP
                 system is found, it fetches the details and presents it to the user in a dialog box. User is asked to
@@ -255,9 +251,9 @@ def add_system_window(menu_frame):
                 """
                 try:
                     sap_system = find_custom_system(source_xml_path,
-                                                    application_server_entry.get(),
-                                                    instance_number_entry.get(),
-                                                    system_id_entry.get())
+                                                    app_server_entry.get(),
+                                                    instance_num_entry.get(),
+                                                    sys_id_entry.get())
                     if sap_system is not None:
                         system_info = f"Description: {sap_system.get('name')}\n\n" \
                                       f"Server Address: {sap_system.get('server')}\n\n" \
@@ -284,21 +280,26 @@ def add_system_window(menu_frame):
                     logging.error(f"Error in get_sap_system(): {str(e)}")
 
             def on_connection_type_change(*args):
-                """
-                   Adjusts the GUI based on the user's chosen connection type.
-                   If the user chooses the first type of connection (represented by 1),
-                   a form is displayed and the "Next" button is configured to retrieve SAP system information.
-                   If the user chooses the second type of connection (represented by 2), the form is hidden
-                   and the "Next" button's action is removed.
-                   """
                 if connection_type.get() == 1:
-                    form_frame.pack()  # Show the form
-                    # Modify the button command to pass menu_frame as an argument
-                    next_button.config(command=lambda: get_sap_system(menu_frame))
+                    custom_system_form_frame.pack()  # Show the custom system form
+                    group_server_form_frame.pack_forget()  # Hide the group server form
+                    fiori_nwbc_frame.pack_forget()
+
+                    next_button.config(command=lambda: get_custom_sap_system(menu_frame))
 
                 elif connection_type.get() == 2:
-                    form_frame.pack_forget()  # Hide the form
+                    custom_system_form_frame.pack_forget()  # Hide the custom system form
+                    fiori_nwbc_frame.pack_forget()
+
+                    group_server_form_frame.pack()  # Show the group server form
                     next_button.config(command=None)
+                elif connection_type.get() == 3:
+                    custom_system_form_frame.pack_forget()
+                    group_server_form_frame.pack_forget()
+                    fiori_nwbc_frame.pack()
+
+                    next_button.config(command=None)
+
 
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
@@ -311,7 +312,6 @@ def add_system_window(menu_frame):
 
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
-
 
     # Clear the main window
     clear_frame(menu_frame)
