@@ -34,7 +34,7 @@ def remove_duplications_window(menu_frame):
     description_label.pack(pady=10)
 
     show_red_warning(menu_frame)
-    file_label = tk.Label(menu_frame, text="\n\nPlease put a copy of your local XML file",
+    file_label = tk.Label(menu_frame, text="\n\nPlease enter your local XML file",
                           font=("Arial", 10, "bold"),
                           bg="white")
     file_label.pack(pady=10)

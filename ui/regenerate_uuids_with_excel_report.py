@@ -35,7 +35,7 @@ def regenerate_uuids_with_excel_report(menu_frame):
 
     show_red_warning(menu_frame)
 
-    file_label = tk.Label(menu_frame, text="\n\nPlease put a copy of your local XML file",
+    file_label = tk.Label(menu_frame, text="\n\nPlease enter your local XML file",
                           font=("Arial", 10, "bold"),
                           bg="white")
     file_label.pack(pady=10)

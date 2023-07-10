@@ -19,7 +19,7 @@ def export_excel_window(menu_frame):
         menu_frame,
         text="Warnings:\n\n"
              "1. This function will export excel sheets from a SAP UI Landscape File.\n\n"
-             "2. This function won't edit anything in the xml file and only makes a spreadsheet.\n"
+             "2. This function won't edit anything in the xml file and only makes a spreadsheet.\n\n"
              "3. This function will also generate an excel spreadsheet of system duplications in your file\n\n",
         font=("Arial", 10, "bold"),
         bg="white",
@@ -29,7 +29,7 @@ def export_excel_window(menu_frame):
     description_label.pack(pady=10)
     show_red_warning(menu_frame)
 
-    file_label = tk.Label(menu_frame, text="\n\nPlease put a copy of your local XML file",
+    file_label = tk.Label(menu_frame, text="\n\nPlease enter your local XML file",
                           font=("Arial", 10, "bold"),
                           bg="white")
     file_label.pack(pady=10)
