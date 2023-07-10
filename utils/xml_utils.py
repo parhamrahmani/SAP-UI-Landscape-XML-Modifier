@@ -310,6 +310,49 @@ def remove_elements_from_xml(xml_file_path, elements_to_remove, element_name):
     return root
 
 
+def remove_a_system(xml_file_path, sap_system):
+    try:
+        item_to_remove = None
+        status = False
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+
+        # Remove the SAP system from the XML file
+        for item in root.findall(".//Item"):
+            if item.get('serviceid') == sap_system.get('uuid'):
+                item_to_remove = item
+                root.find(".//Services").remove(sap_system)
+                status = True
+                break
+
+        # Save the XML file
+        tree.write(xml_file_path)
+        # Check if the SAP system is successfully removed from the XML file
+        for item in root.findall(".//Item"):
+            if item.get('serviceid') == sap_system.get('uuid'):
+                status = False
+                break
+            else:
+                status = True
+                # Remove the Item as well
+                root.find(".//Items").remove(item_to_remove)
+                # Save the destination XML file
+                tree.write(xml_file_path)
+                # show success message
+                messagebox.showinfo("Success", "The SAP system is successfully removed from the XML file.\n")
+                if messagebox.askyesno("Question", "Do you want to open the XML file?"):
+                    open_folder_containing_file(xml_file_path)
+                    python = sys.executable
+                    os.execl(python, python, *sys.argv)
+        return status
+
+    except Exception as e:
+        messagebox.showwarning("Error in remove_a_system():", str(e))
+        logging.error(f"Error in remove_a_system(): {str(e)}")
+        return False
+
+
 def get_stats(xml_file_path):
     # Parse the XML file
     tree = ET.parse(xml_file_path)
