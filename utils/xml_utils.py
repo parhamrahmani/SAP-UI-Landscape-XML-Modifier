@@ -607,3 +607,42 @@ def find_all_instance_numbers_based_on_server_address(xml_file_path, server_addr
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while listing instance numbers: {str(e)}")
         logging.error(f"An error occurred while listing instance numbers: {str(e)}")
+
+
+def find_group_server_connections(xml_file_path, system_id, message_server, router):
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        possible_connections = []
+        message_server_id = None
+        router_id = None
+        candidate_connection = None
+        final_result = None
+
+        for service in root.findall(".//Service"):
+            if service.get('msid') is not None:
+                if service.get('systemid') == system_id:
+                    possible_connections.append({'serviceid': service.get('uuid'),
+                                                 'msid': service.get('msid'),
+                                                 'routerid': service.get('routerid')})
+        for ms in root.findall(".//Messageserver"):
+            if ms.get('host') == message_server:
+                message_server_id = ms.get('uuid')
+        for rt in root.findall(".//Router"):
+            if rt.get('name') == router:
+                router_id = rt.get('uuid')
+        for gsc in possible_connections:
+            if gsc.get('msid') == message_server_id and gsc.get('routerid') == router_id:
+                candidate_connection = gsc
+
+        if candidate_connection is not None:  # Add this check
+            for service in root.findall(".//Service"):
+                if service.get('uuid') == candidate_connection.get('serviceid'):
+                    final_result = service
+
+        return final_result, message_server, router
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding group/server connection: {str(e)}")
+        logging.error(f"An error occurred while finding group/server connection: {str(e)}")
+
