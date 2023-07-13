@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 from utils.xml_utils import list_system_ids_for_group_server_connection_entry, find_message_server_based_on_system_id, \
     get_all_routers, get_all_urls, get_all_custom_sap_gui_info, find_all_system_ids_based_on_server_address, \
-    find_all_instance_numbers_based_on_server_address
+    find_all_instance_numbers_based_on_server_address, \
+    find_sap_routers_based_on_system_id_message_server
 
 WIDTH = 50
 FONT_SIZE = 10
@@ -37,28 +38,33 @@ def create_custom_system_form(xml_file_path, frame):
                                font=("Arial", FONT_SIZE))
     system_id_label.grid(row=2, column=0, padx=5, pady=5)
 
-
-    def update_instance_numbers_options(*args):
+    def update_options(*args):
         server_address = application_server_combobox.get()
+
+        # Update instance numbers
         instance_numbers = find_all_instance_numbers_based_on_server_address(xml_file_path, server_address)
-        instance_number_combobox['values'] = instance_numbers
-        # Run update_instance_numbers_options whenever application_server_combobox changes
+        if len(instance_numbers) == 1:
+            instance_number_combobox.insert(0, instance_numbers[0])
+        else:
+            instance_number_combobox['values'] = instance_numbers
 
-    application_server_combobox.bind('<KeyRelease>', update_instance_numbers_options)
-    application_server_combobox.bind('<<ComboboxSelected>>', update_instance_numbers_options)
-
-    def update_system_id_options(*args):
-        server_address = application_server_combobox.get()
+        # Update system IDs
         server_instance = instance_number_combobox.get()
         if server_address and server_instance:  # Only proceed if server_address and server_instance are not empty
             system_ids = find_all_system_ids_based_on_server_address(xml_file_path, server_address, server_instance)
-            system_id_combobox['values'] = system_ids
+            if len(system_ids) == 1:
+                system_id_combobox.insert(0, system_ids[0])
+            else:
+                system_id_combobox['values'] = system_ids
         else:  # If server_address or server_instance is empty
             system_id_combobox['values'] = []  # clear the combobox values
 
-    # Run update_system_id_options whenever instance_number_combobox changes
-    instance_number_combobox.bind('<KeyRelease>', update_system_id_options)
-    instance_number_combobox.bind('<<ComboboxSelected>>', update_system_id_options)
+    # Run update_options whenever application_server_combobox or instance_number_combobox changes
+    application_server_combobox.bind('<KeyRelease>', update_options)
+    application_server_combobox.bind('<<ComboboxSelected>>', update_options)
+
+    instance_number_combobox.bind('<KeyRelease>', update_options)
+    instance_number_combobox.bind('<<ComboboxSelected>>', update_options)
 
     return application_server_combobox, instance_number_combobox, system_id_combobox, custom_system_form_frame
 
@@ -86,8 +92,10 @@ def create_group_server_form(xml_file_path, frame):
                                     font=("Arial", FONT_SIZE))
     message_server_label.grid(row=1, column=0, padx=5, pady=5)
 
-    def update_message_server_entry(*args):
+    def update_comboboxes(*args):
         system_id = system_id_combobox.get()
+
+        # Update message server
         if system_id:  # Only proceed if system_id is not empty
             message_server = find_message_server_based_on_system_id(xml_file_path, system_id)
             message_server_entry.delete(0, tk.END)  # clear the entry field
@@ -96,9 +104,23 @@ def create_group_server_form(xml_file_path, frame):
         else:  # If system_id is empty
             message_server_entry.delete(0, tk.END)  # clear the entry field
 
-    # Run update_message_server_entry whenever system_id_combobox changes
-    system_id_combobox.bind('<KeyRelease>', update_message_server_entry)
-    system_id_combobox.bind('<<ComboboxSelected>>', update_message_server_entry)
+        # Update router combobox
+        if system_id:  # Only proceed if system_id is not empty
+            message_server = find_message_server_based_on_system_id(xml_file_path, system_id)
+            sap_routers = find_sap_routers_based_on_system_id_message_server(xml_file_path, system_id,
+                                                                             message_server.get('uuid'))
+            sap_router_combobox.delete(0, tk.END)
+            if sap_routers is not None and len(sap_routers) == 1:
+                sap_router_combobox.insert(0, sap_routers[0].get('name'))
+            else:
+                sap_router_combobox['values'] = sap_routers
+
+        else:  # If system_id is empty
+            sap_router_combobox.delete(0, tk.END)  # clear the combobox values
+
+    # Run update_comboboxes whenever system_id_combobox changes
+    system_id_combobox.bind('<KeyRelease>', update_comboboxes)
+    system_id_combobox.bind('<<ComboboxSelected>>', update_comboboxes)
 
     routers = get_all_routers(xml_file_path)
     router_options = [rt.get('name') for rt in routers]
