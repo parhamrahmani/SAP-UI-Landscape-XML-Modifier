@@ -1,5 +1,5 @@
 
-## SAP UI Landscape XML Modifier v0.1.0
+## SAP UI Landscape XML Modifier v1.0.0
 
 The SAP UI Landscape XML Modifier is a Python programme designed to modify SAP UI Landscape XML "Local" files into "Centralized/Global" landscape files. It provides various functionalities like adding systms from your local xml configuration file into another xml configuartion file, regenerating UUIDs for workspaces, nodes, services, and items, as well as the option to remove inclusions of SAPUILandscapeGlobal from your local file, in order to make it usable as a central file. This programme is useful for customising and managing SAP UI Landscape XML files according to specific requirements.
 
@@ -77,32 +77,7 @@ use this programme on a copy of your original XML file. Always create a backup o
 ## Installation
 
 
-- Make sure you have Python installed on your system. The programme utilises Python's built-in xml.etree.ElementTree module, which is commonly available. Download and install Python from their [Website](https://www.python.org/?downloads) or use package managers such as *Chocolatey* to install it.
-
-```
-choco install -y python3
-```
-
-- This programme needs some other packages that need to be installed on your PC. To install this. Open PowerShell or cmd **as an administrator** and run this command.
- 
- 
- *First, ensure you have Python installed*
-```
-py --version
-```
-*Then ensure you have pip installed*
-```
-py -m ensurepip
-```
-*Install the required packages*
-```
-py -m pip install pandas openpyxl lxml tkinter
-```
-- After the reassurance that the packages are installed, you can download the repository as a zip file, extract it, and run *main.py* in the root folder.
-You should see this when run correctly:
-
-
-
+- Simply download the last release from the "Releases" tab and run the .exe file. The main menu should look like this: 
 ![alt text](https://github.com/parhamrahmani/SAP-UI-Landscape-XML-Modifier/blob/master/main_menu_screenshot.png)
 
 
