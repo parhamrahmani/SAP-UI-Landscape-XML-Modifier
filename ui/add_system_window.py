@@ -59,18 +59,18 @@ def add_system_window(menu_frame):
 
             radiobutton_1 = tk.Radiobutton(radio_button_frame, bg="white", fg="black",
                                            text="1. Custom Application Server",
-                                           font=("Arial", 10, "bold"), variable=connection_type,
+                                           font=("Arial", 8, "bold"), variable=connection_type,
                                            value=1)
             radiobutton_1.grid(row=0, column=0, padx=10)  # pack replaced with grid
 
             radiobutton_2 = tk.Radiobutton(radio_button_frame, bg="white", fg="black", text="2. Group/Server Selection",
-                                           font=("Arial", 10, "bold"), variable=connection_type,
+                                           font=("Arial", 8, "bold"), variable=connection_type,
                                            value=2)
             radiobutton_2.grid(row=0, column=1, padx=10)
             radiobutton_3 = tk.Radiobutton(radio_button_frame, bg="white", fg="black", text="3. FIORI/NWBC System",
-                                           font=("Arial", 10, "bold"), variable=connection_type,
+                                           font=("Arial", 8, "bold"), variable=connection_type,
                                            value=3)
-            radiobutton_3.grid(row=1, column=0, padx=10)
+            radiobutton_3.grid(row=0, column=2, padx=10)
 
             app_server_entry, instance_num_entry, sys_id_entry, custom_system_form_frame = create_custom_system_form(
                 source_xml_path,

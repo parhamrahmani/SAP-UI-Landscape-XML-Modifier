@@ -318,7 +318,8 @@ def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, 
 
                                                 "Output file saved at: " + destination_xml_path)
                         elif connection_type == 'Group/Server Connection':
-                            # message_server_address = find_message_server(new_file_path, service.get('msid')).get('host')
+                            # message_server_address = find_message_server(new_file_path, service.get('msid')).get(
+                            # 'host')
 
                             messagebox.showinfo("Success",
                                                 "The SAP system is successfully added to the destination XML "
@@ -418,47 +419,45 @@ def remove_elements_from_xml(xml_file_path, elements_to_remove, element_name):
     return root
 
 
-def remove_a_system(xml_file_path, sap_system):
+def remove_a_system(xml_file_path, sap_system_str):
     try:
-        item_to_remove = None
-        status = False
+        # Parse the sap_system string to get an lxml Element
+        sap_system = ET.fromstring(sap_system_str)
         # Parse the XML file
-        tree = ET.parse(xml_file_path)
+        tree = le.parse(xml_file_path)
         root = tree.getroot()
 
-        # Remove the SAP system from the XML file
+        uuid_to_remove = sap_system.get('uuid')
+
+        # Remove the matching Service from the XML file
+        for service in root.findall(".//Service"):
+            if service.get('uuid') == uuid_to_remove:
+                # Get parent of the service
+                parent = service.getparent()
+                # Remove the service
+                parent.remove(service)
+                # Once we've removed the service, we can break from the loop
+                break
+
+        # Remove the matching Item from the XML file
         for item in root.findall(".//Item"):
-            if item.get('serviceid') == sap_system.get('uuid'):
-                item_to_remove = item
-                root.find(".//Services").remove(sap_system)
-                status = True
+            if item.get('serviceid') == uuid_to_remove:
+                # Get parent of the item
+                parent = item.getparent()
+                # Remove the item
+                parent.remove(item)
+                # Once we've removed the item, we can break from the loop
                 break
 
         # Save the XML file
-        tree.write(xml_file_path)
-        # Check if the SAP system is successfully removed from the XML file
-        for item in root.findall(".//Item"):
-            if item.get('serviceid') == sap_system.get('uuid'):
-                status = False
-                break
-            else:
-                status = True
-                # Remove the Item as well
-                root.find(".//Items").remove(item_to_remove)
-                # Save the destination XML file
-                tree.write(xml_file_path)
-                # show success message
-                messagebox.showinfo("Success", "The SAP system is successfully removed from the XML file.\n")
-                if messagebox.askyesno("Question", "Do you want to open the XML file?"):
-                    open_folder_containing_file(xml_file_path)
-                    python = sys.executable
-                    os.execl(python, python, *sys.argv)
-        return status
+        tree.write(xml_file_path, pretty_print=True)
+        messagebox.showinfo("Success", "The SAP system is successfully removed from the XML file.\n\n")
+
+        return True
 
     except Exception as e:
-        messagebox.showwarning("Error in remove_a_system():", str(e))
-        logging.error(f"Error in remove_a_system(): {str(e)}")
-        return False
+        messagebox.showerror("Error", f"An error occurred while removing the system: {str(e)}")
+        logging.error(f"An error occurred while removing the system: {str(e)}")
 
 
 def get_stats(xml_file_path):

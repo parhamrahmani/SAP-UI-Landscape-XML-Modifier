@@ -1,7 +1,6 @@
 import tkinter as tk
 
 
-
 """
 This script creates a GUI for SAP UI Landscape XML Modifier. 
 

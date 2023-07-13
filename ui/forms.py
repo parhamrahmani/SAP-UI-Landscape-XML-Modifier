@@ -41,6 +41,12 @@ def create_custom_system_form(xml_file_path, frame):
     def update_options(*args):
         server_address = application_server_combobox.get()
 
+        # Clear the instance number and system ID comboboxes
+        instance_number_combobox['values'] = []
+        system_id_combobox['values'] = []
+        instance_number_combobox.set('')
+        system_id_combobox.set('')
+
         # Update instance numbers
         instance_numbers = find_all_instance_numbers_based_on_server_address(xml_file_path, server_address)
         if len(instance_numbers) == 1:
