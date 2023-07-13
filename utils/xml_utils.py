@@ -3,14 +3,15 @@ import os
 import sys
 from tkinter import messagebox, simpledialog, filedialog
 import tkinter as tk
+from xml import dom
+
 from utils.excel_utils import *
 import lxml.etree as le
 import uuid
-import uuid
 import xml.etree.ElementTree as ET
-
 from utils.excel_utils import generate_excel_files
 import pandas as pd
+import xml.dom.minidom
 
 
 # Function to regenerate UUIDs for workspaces
@@ -161,7 +162,7 @@ def find_message_server(xml_file_path, msid):
     # Parse the source XML file
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
-    for ms in root.findall(".//MessageServer"):
+    for ms in root.findall(".//Messageserver"):
         if ms.get('uuid') == msid:
             return ms
 
@@ -171,9 +172,14 @@ def list_all_workspaces(xml_file_path):
         # Parse the destination XML file
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
-        workspaces = root.findall(".//Workspace")
-
-        return workspaces
+        workspaces_el = root.find(".//Workspaces")
+        if workspaces_el is not None:
+            workspaces = workspaces_el.findall(".//Workspace")
+            return workspaces
+        else:
+            workspaces_el = ET.SubElement(root, "Workspaces")
+            workspaces = []
+            return workspaces
 
     except Exception as e:
         messagebox.showwarning("Error in list_all_workspaces():", str(e))
@@ -186,6 +192,14 @@ def list_nodes_of_workspace(xml_file_path, workspace_name):
         # Parse the destination XML file
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
+        if root.tag != "Landscape":
+            messagebox.showwarning("Error in XML structure:",
+                                   "The root tag of the XML file should be <Landscape>. Please correct your XML file "
+                                   "and try again."
+                                   "\n\nThe XML file must be a SAP Landscape File!\n"
+                                   "If your destination file is an empty XML file, please edit the xml file and add\n "
+                                   "<Landscape> </Landscape> to it!\n")
+            return None
         workspaces = root.findall(".//Workspace")
         node_names = []
         for ws in workspaces:
@@ -199,7 +213,7 @@ def list_nodes_of_workspace(xml_file_path, workspace_name):
         return []  # Return an empty list instead of None
 
 
-def add_custom_system(sap_system, root_xml_path, destination_xml_path, workspace_name, node_name):
+def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, node_name, connection_type):
     try:
         status = False
         # Parse the destination XML file
@@ -208,52 +222,128 @@ def add_custom_system(sap_system, root_xml_path, destination_xml_path, workspace
         # Parse the root XML file
         source_tree = ET.parse(root_xml_path)
         source_root = source_tree.getroot()
+
         # Add service to the destination XML file
-        if len(root.find(".//Services")) == 0:
-            # Should throw exception if no services found
-            raise Exception("No services element found in the destination XML file."
-                            "Please make sure that the destination XML file is a "
-                            "valid SAPUILandscape.xml file.")
-        else:
+        if root.find(".//Services") is None:
+            services = ET.SubElement(root, 'Services')  # Creates the Services element
             sap_system.set('uuid', str(uuid.uuid4()))
-            root.find(".//Services").append(sap_system)
-        # Check if there is Routers mentioned the SAP system, and they are also in the destination file
+            services.append(sap_system)
+        else:
+            services = root.find(".//Services")
+            sap_system.set('uuid', str(uuid.uuid4()))
+            services.append(sap_system)
+        # Check if there is a Routers mentioned the SAP system, and they are also in the destination file
         if sap_system.get('routerid') is not None:
+            routers = root.find(".//Routers")
+            if routers is None:
+                routers = ET.SubElement(root, 'Routers')  # Creates the Routers element if it does not exist
+
             for router in source_root.findall(".//Router"):
+                # Find the router in the source XML file
                 if router.get('uuid') == sap_system.get('routerid'):
                     # Check if the router is already in the destination file
                     if find_router(destination_xml_path, router.get('uuid')) is None:
-                        root.find(".//Routers").append(router)
+                        routers.append(router)
                         break
-                    break
+
         # Check for Message Servers
         if sap_system.get('msid') is not None:
-            for ms in source_root.findall(".//MessageServer"):
+            messageservers = root.find(".//Messageservers")
+            if messageservers is None:
+                messageservers = ET.SubElement(root,
+                                               'Messageservers')  # Creates the Messageservers element if it does not exist
+
+            for ms in source_root.findall(".//Messageserver"):
+                # Find the message server in the source XML file
                 if ms.get('uuid') == sap_system.get('msid'):
                     # Check if the message server is already in the destination file
                     if find_message_server(destination_xml_path, ms.get('uuid')) is None:
-                        root.find(".//MessageServers").append(ms)
+                        messageservers.append(ms)
                         break
-                    break
+
         # Creating an Item and adding it to the specified Workspace and Node in the destination XML file
-        for workspace in root.findall(".//Workspace"):
-            if workspace.get('name') == workspace_name:
-                for node in workspace.findall(".//Node"):
-                    if node.get('name') == node_name:
-                        item = ET.SubElement(node, 'Item')
-                        item.set('uuid', sap_system.get('uuid'))
-                        item.set('serviceid', sap_system.get('uuid'))
-        # Save the destination XML file
+        workspaces = root.find(".//Workspaces")
+        if workspaces is None:
+            workspaces = ET.SubElement(root, 'Workspaces')
+
+        # Get or create the workspace
+        workspace = next((ws for ws in workspaces.findall(".//Workspace") if ws.get('name') == workspace_name), None)
+        if workspace is None:
+            workspace = ET.SubElement(workspaces, 'Workspace')
+            workspace.set('uuid', str(uuid.uuid4()))
+            workspace.set('name', workspace_name)
+            workspace.set('expanded', "0")
+            workspace.set('hidden', "0")
+
+        # Get or create the node
+        if node_name is not None and node_name != "":
+            node = next((nd for nd in workspace.findall(".//Node") if nd.get('name') == node_name), None)
+            if node is None:
+                node = ET.SubElement(workspace, 'Node')
+                node.set('uuid', str(uuid.uuid4()))
+                node.set('name', node_name)
+                node.set('expanded', "0")
+                node.set('hidden', "0")
+
+            item_parent = node
+        else:
+            item_parent = workspace
+
+        # Create the item
+        item = ET.SubElement(item_parent, 'Item')
+        item.set('uuid', str(uuid.uuid4()))
+        item.set('serviceid', sap_system.get('uuid'))
+
+        # Write the changes to the destination XML file
         tree.write(destination_xml_path)
+
         # Check if the sap system is successfully added to the destination XML file
         for item in root.findall(".//Item"):
             if item.get('serviceid') == sap_system.get('uuid'):
                 for service in root.findall(".//Service"):
                     if service.get('uuid') == sap_system.get('uuid'):
                         status = True
-                        messagebox.showinfo("Success", "The SAP system is successfully added to the destination XML "
-                                                       "file.\n"
-                                                       "Output file: " + destination_xml_path)
+                        if connection_type == 'Custom Application Server':
+                            # router_address = find_router(new_file_path, service.get('routerid')).get('name')
+                            messagebox.showinfo("Success",
+                                                "The SAP system is successfully added to the destination XML "
+                                                "file.\n\n"
+                                                "System Info:\n"
+                                                f"System name: {service.get('name')}\n"
+                                                f"System ID: {service.get('systemid')}\n"
+                                                f"Application Server: {service.get('server')}\n"
+                                                # f"Router: {router_address}\n"
+                                                f"Connection Type: {connection_type}\n\n"
+
+
+                                                "Output file saved at: " + destination_xml_path)
+                        elif connection_type == 'Group/Server Connection':
+                            # message_server_address = find_message_server(new_file_path, service.get('msid')).get('host')
+
+                            messagebox.showinfo("Success",
+                                                "The SAP system is successfully added to the destination XML "
+                                                "file.\n\n"
+                                                "System Info:\n"
+                                                f"System name: {service.get('name')}\n"
+                                                f"System ID: {service.get('systemid')}\n"
+                                                f"Application Server: {service.get('server')}\n"
+                                                # f"Message Server: {message_server_address} \n"
+                                                f"Connection Type: {connection_type}\n\n"
+                                                "Output file saved at: " + destination_xml_path)
+                        elif connection_type == 'FIORI/NWBC Connection':
+                            messagebox.showinfo("Success",
+                                                "The SAP system is successfully added to the destination XML "
+                                                "file.\n\n"
+                                                "System Info:\n"
+                                                f"System name: {service.get('name')}\n"
+                                                f"URL: {service.get('url')}\n"
+                                                f"Connection Type: {connection_type}\n\n"
+                                                "Output file saved at: " + destination_xml_path)
+                        else:
+                            messagebox.showinfo("Error",
+                                                "The SAP system is not successfully added to the destination XML "
+                                                "file.\n\n")
+
                         if messagebox.askyesno("Question", "Do you want to open the destination XML file?"):
                             open_folder_containing_file(destination_xml_path)
                             python = sys.executable
@@ -262,8 +352,8 @@ def add_custom_system(sap_system, root_xml_path, destination_xml_path, workspace
         return status
 
     except Exception as e:
-        messagebox.showwarning("Error in add_custom_system():", str(e))
-        logging.error(f"Error in add_custom_system(): {str(e)}")
+        messagebox.showwarning("Error in add_system():", str(e))
+        logging.error(f"Error in add_system(): {str(e)}")
         return False
 
 
@@ -577,7 +667,6 @@ def find_all_system_ids_based_on_server_address(xml_file_path, server_address, s
                 if service.get('server') == server:
                     system_ids.append(service.get('systemid'))
 
-
         return system_ids
 
     except Exception as e:
@@ -646,3 +735,54 @@ def find_group_server_connections(xml_file_path, system_id, message_server, rout
         messagebox.showerror("Error", f"An error occurred while finding group/server connection: {str(e)}")
         logging.error(f"An error occurred while finding group/server connection: {str(e)}")
 
+
+def find_sap_routers_based_on_system_id_message_server(xml_file_path, system_id, message_server_id):
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        sap_routers = []
+
+        for service in root.findall(".//Service"):
+            if service.get('systemid') == system_id and service.get('msid') == message_server_id:
+                sap_router_id = service.get('routerid')
+
+                for router in root.findall(".//Router"):
+                    if router.get('uuid') == sap_router_id:
+                        sap_routers.append(router)
+        return sap_routers
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding SAP router: {str(e)}")
+        logging.error(f"An error occurred while finding SAP router: {str(e)}")
+
+
+def find_fiori_nwbc_system(xml_file_path, url):
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        fnwbc_system = None
+
+        for service in root.findall(".//Service"):
+            if service.get('url') is not None:
+                if service.get('url') == url:
+                    fnwbc_system = service
+
+        return fnwbc_system
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding Fiori/NWBC systems: {str(e)}")
+        logging.error(f"An error occurred while finding Fiori/NWBC systems: {str(e)}")
+
+
+def add_root_tag_to_empty_xml_file(xml_file_path):
+    try:
+        with open(xml_file_path, 'r') as file:
+            content = file.read().strip()  # This will remove leading/trailing whitespaces, newlines etc.
+
+        if not content:
+            with open(xml_file_path, 'w') as file:
+                file.write("<Landscape></Landscape>")
+    except FileNotFoundError:
+        print(f"The file {xml_file_path} does not exist.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
