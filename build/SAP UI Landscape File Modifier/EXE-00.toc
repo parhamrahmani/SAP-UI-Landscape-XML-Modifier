@@ -1,9 +1,9 @@
 ('C:\\Users\\PR106797\\PycharmProjects\\uuid_manipulator\\dist\\SAP UI '
  'Landscape File Modifier.exe',
- True,
  False,
  False,
- 'C:\\Python311\\Lib\\site-packages\\PyInstaller\\bootloader\\images\\icon-console.ico',
+ False,
+ ['C:\\Users\\PR106797\\Downloads\\document-edit_114472.ico'],
  None,
  False,
  False,
@@ -4604,7 +4604,7 @@
  [],
  False,
  False,
- 1689258709,
- [('run.exe',
-   'C:\\Python311\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
+ 1689260122,
+ [('runw.exe',
+   'C:\\Python311\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\runw.exe',
    'EXECUTABLE')])

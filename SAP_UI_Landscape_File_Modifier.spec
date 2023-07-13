@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['SAP UI Landscape File Modifier.py'],
+    ['SAP_UI_Landscape_File_Modifier.py'],
     pathex=[],
     binaries=[],
     datas=[],
@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='SAP UI Landscape File Modifier',
+    name='SAP_UI_Landscape_File_Modifier',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -41,5 +41,4 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\PR106797\\Downloads\\document-edit_114472.ico'],
 )
