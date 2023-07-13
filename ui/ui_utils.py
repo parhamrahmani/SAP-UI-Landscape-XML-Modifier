@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import tkinter.font as tkfont
 import tkinter as tk
@@ -22,10 +23,11 @@ def show_red_warning(frame):
 
 def restart_program():
     """
-        Restarts the current python program by re-executing the current Python script with the same arguments.
-        """
+    Restarts the current python program by re-executing the current Python script with the same arguments.
+    """
     python = sys.executable
-    os.execl(python, python, *sys.argv)
+    script = '"' + sys.argv[0] + '"'  # Add quotes around script name
+    os.execl(python, python, script, *sys.argv[1:])
 
 
 def clear_frame(frame):
