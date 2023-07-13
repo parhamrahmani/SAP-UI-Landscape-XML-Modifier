@@ -77,7 +77,8 @@ use this programme on a copy of your original XML file. Always create a backup o
 ## Installation
 
 
-- Simply download the last release from the "Releases" tab and run the .exe file. The main menu should look like this: 
+- Simply download the last release from the "Releases" tab and run the .exe file. The main menu should look like this:
+  
 ![alt text](https://github.com/parhamrahmani/SAP-UI-Landscape-XML-Modifier/blob/master/main_menu_screenshot.png)
 
 
