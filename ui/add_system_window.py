@@ -2,11 +2,13 @@ import logging
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox
+import xml.etree.ElementTree as ET
 
 from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
 from ui.ui_utils import clear_frame, create_exit_restart_back_buttons
-from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_custom_system, \
-    find_custom_system, find_group_server_connections, find_message_server
+from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_system, \
+    find_custom_system, find_group_server_connections, find_message_server, find_fiori_nwbc_system, \
+    add_root_tag_to_empty_xml_file
 
 
 def add_system_window(menu_frame):
@@ -29,6 +31,7 @@ def add_system_window(menu_frame):
         if xml_file_path:
             xml_path_entry2.delete(0, tk.END)  # Clear the entry field
             xml_path_entry2.insert(tk.END, xml_file_path)  # Insert the selected file path
+        add_root_tag_to_empty_xml_file(xml_file_path)
 
     def proceed_to_next():
         """
@@ -120,111 +123,65 @@ def add_system_window(menu_frame):
 
                 workspaces = list_all_workspaces(destination_xml_path)
                 system_to_add = sap_system
-                router_bool = False
-                message_server_bool = False
+                router_bool = sap_system.get('routerid') is not None
+                message_server_bool = sap_system.get('msid') is not None
+                url_bool = sap_system.get('url') is not None
 
-                if sap_system.get('routerid') is not None:
-                    router_bool = True
-                if sap_system.get('msid') is not None:
-                    message_server_bool = True
-
-                    # Create a Frame for the tab
+                # Create a Frame for the tab
                 tab_frame = tk.Frame(frame, bg='white')
                 tab_frame.pack(pady=10)
 
                 selected_workspace = tk.StringVar(tab_frame)
                 selected_node = tk.StringVar(tab_frame)
 
-                if router_bool:
-                    # Create a frame to contain the labels
+                router = find_router(source_xml_path, sap_system.get('routerid')) if router_bool else None
+                router_address = router.get('name') if router is not None else None
+                message_server = find_message_server(source_xml_path,
+                                                     sap_system.get('msid')) if message_server_bool else None
+                message_server_address = message_server.get('host') if message_server is not None else None
 
-                    router = find_router(source_xml_path, sap_system.get('routerid'))
-                    router_address = router.get('name') if router is not None else None
-
-                    # Create labels for each piece of information
-                    sap_system_name_label = tk.Label(tab_frame, text=f"Selected SAP System: ",
-                                                     font=("Arial", 10, "bold"), fg="black", bg="white")
-                    sap_system_name_value = tk.Label(tab_frame, text=f"{system_to_add.get('name')}", font=("Arial", 10),
-                                                     fg="black", bg="white")
-
-
-                    server_address_value = tk.Label(tab_frame, text=f"{system_to_add.get('server')}",
-                                                        font=("Arial", 10), fg="black", bg="white")
-                    server_address_label = tk.Label(tab_frame, text=f"Server Address: ", font=("Arial", 10, "bold"),
-                                                        fg="black", bg="white")
-                    server_address_label.grid(row=1, column=0, sticky='w')
-                    server_address_value.grid(row=1, column=1, sticky='w')
-
-                    system_id_label = tk.Label(tab_frame, text=f"System ID: ", font=("Arial", 10, "bold"), fg="black",
-                                               bg="white")
-                    system_id_value = tk.Label(tab_frame, text=f"{system_to_add.get('systemid')}", font=("Arial", 10),
-                                               fg="black", bg="white")
-
-                    router_string_label = tk.Label(tab_frame, text=f"Router String: ", font=("Arial", 10, "bold"),
-                                                   fg="black", bg="white")
-                    router_string_value = tk.Label(tab_frame, text=f"{router_address}", font=("Arial", 10), fg="black",
-                                                   bg="white")
-
-                    # Grid placement of the labels
-                    sap_system_name_label.grid(row=0, column=0, sticky='w')
-                    sap_system_name_value.grid(row=0, column=1, sticky='w')
-
-                    system_id_label.grid(row=2, column=0, sticky='w')
-                    system_id_value.grid(row=2, column=1, sticky='w')
-
-                    router_string_label.grid(row=3, column=0, sticky='w')
-                    router_string_value.grid(row=3, column=1, sticky='w')
+                label_info = [("Selected SAP System: ", system_to_add.get('name'))]
+                if url_bool:
+                    label_info.append(("URL: ", system_to_add.get('url')))
                 else:
-                    sap_system_name_label = tk.Label(tab_frame, text=f"Selected SAP System: ",
-                                                     font=("Arial", 10, "bold"), fg="black", bg="white")
-                    sap_system_name_value = tk.Label(tab_frame, text=f"{system_to_add.get('name')}", font=("Arial", 10),
-                                                     fg="black", bg="white")
+                    label_info.append(("System ID: ", system_to_add.get('systemid')))
+                if router_bool:
+                    label_info.append(("Router: ", router_address))
+                if message_server_bool:
+                    label_info.append(("Message Server: ", message_server_address))
+                if not message_server_bool and sap_system.get('server') is not None:
+                    label_info.append(("Server Address: ", system_to_add.get('server')))
 
-
-
-                    server_address_value = tk.Label(tab_frame, text=f"{system_to_add.get('server')}",
-                                                        font=("Arial", 10), fg="black", bg="white")
-                    server_address_label = tk.Label(tab_frame, text=f"Server Address: ", font=("Arial", 10, "bold"),
-                                                        fg="black", bg="white")
-                    server_address_label.grid(row=1, column=0, sticky='w')
-                    server_address_value.grid(row=1, column=1, sticky='w')
-
-                    system_id_label = tk.Label(tab_frame, text=f"System ID: ", font=("Arial", 10, "bold"), fg="black",
-                                               bg="white")
-                    system_id_value = tk.Label(tab_frame, text=f"{system_to_add.get('systemid')}", font=("Arial", 10),
-                                               fg="black", bg="white")
-                    # Grid placement of the labels
-                    sap_system_name_label.grid(row=0, column=0, sticky='w')
-                    sap_system_name_value.grid(row=0, column=1, sticky='w')
-
-                    system_id_label.grid(row=2, column=0, sticky='w')
-                    system_id_value.grid(row=2, column=1, sticky='w')
+                for i, (label_text, value_text) in enumerate(label_info):
+                    label = tk.Label(tab_frame, text=label_text, font=("Arial", 10, "bold"), fg="black", bg="white")
+                    value = tk.Label(tab_frame, text=value_text, font=("Arial", 10), fg="black", bg="white")
+                    label.grid(row=i, column=0, sticky='w')
+                    value.grid(row=i, column=1, sticky='w')
 
                 # Create a label for source file
                 tab_label = tk.Label(tab_frame,
                                      text=f"Please select which Workspace and Node You want to add the system to: ",
                                      font=("Arial", 10, "bold"), fg="black", bg="white")
-                tab_label.grid(row=4, column=0, columnspan=2, pady=10)
+                tab_label.grid(row=len(label_info), column=0, columnspan=2, pady=10)
 
                 # Create a label and dropdown menu for the workspaces
                 workspace_label = tk.Label(tab_frame, text="Workspace: ", font=("Arial", 10, "bold"), fg="black",
                                            bg="white")
-                workspace_label.grid(row=6, column=0, sticky='w')
+                workspace_label.grid(row=len(label_info) + 1, column=0, sticky='w')
 
                 workspace_options = [ws.get('name') for ws in workspaces]
                 workspace_combobox = ttk.Combobox(tab_frame, textvariable=selected_workspace, values=workspace_options,
-                                                  state='readonly')
-                workspace_combobox.grid(row=6, column=1, sticky='w')
+                                                  state='normal')  # Change state to 'normal'
+                workspace_combobox.grid(row=len(label_info) + 1, column=1, sticky='w')
 
                 # Create a label and dropdown menu for the nodes
                 node_label = tk.Label(tab_frame, text="Node: ", font=("Arial", 10, "bold"), fg="black", bg="white")
-                node_label.grid(row=7, column=0, sticky='w')
+                node_label.grid(row=len(label_info) + 2, column=0, sticky='w')
 
-                node_combobox = ttk.Combobox(tab_frame, textvariable=selected_node, values=[], state='readonly')
-                node_combobox.grid(row=7, column=1, sticky='w')
+                node_combobox = ttk.Combobox(tab_frame, textvariable=selected_node, values=[],
+                                             state='normal')  # Change state to 'normal'
+                node_combobox.grid(row=len(label_info) + 2, column=1, sticky='w')
 
-                # Update nodes when a workspace is selected
-                # Update nodes when a workspace is selected
                 def update_nodes(*args):
                     """
                     Updates the node dropdown menu in the GUI when a new workspace is selected. This function is
@@ -234,28 +191,44 @@ def add_system_window(menu_frame):
                     """
                     nodes = list_nodes_of_workspace(destination_xml_path, selected_workspace.get())
                     node_combobox['values'] = nodes  # Update the values in the Combobox
-                    selected_node.set('')  # Clear the selected node value
-                    # If nodes are found, enable the node combobox
+                    if len(nodes) == 1:
+                        selected_node.set(nodes[0])  # Clear the selected node value
                     if nodes:
                         node_combobox.config(state="normal")
                     else:
-                        node_combobox.config(state="disabled")  # If no nodes are found, disable the node combobox
+                        node_combobox.config(state="normal")
 
-                # Run update_nodes whenever selected_workspace changes
                 selected_workspace.trace('w', update_nodes)
 
-                # Create a Button for submitting the system to the destination XML file
                 if not message_server_bool and sap_system.get('server') is not None:
                     submit_button = tk.Button(tab_frame, text="Submit", font=("Arial", 12, "bold"), fg="white",
                                               bg="black", padx=10, pady=3,
-                                              command=lambda: add_custom_system(sap_system, source_xml_path,
-                                                                                destination_xml_path,
-                                                                                selected_workspace.get(),
-                                                                                selected_node.get()))
-
-                    submit_button.grid(row=8, column=0, columnspan=2, pady=10)
+                                              command=lambda: add_system(sap_system, source_xml_path,
+                                                                         destination_xml_path,
+                                                                         selected_workspace.get(),
+                                                                         selected_node.get(),
+                                                                         'Custom Application Server'))
+                    submit_button.grid(row=len(label_info) + 3, column=0, columnspan=2, pady=10)
+                elif message_server_bool and sap_system.get('server') is not None and sap_system.get(
+                        'systemid') is not None:
+                    submit_button = tk.Button(tab_frame, text="Submit", font=("Arial", 12, "bold"), fg="white",
+                                              bg="black", padx=10, pady=3,
+                                              command=lambda: add_system(sap_system, source_xml_path,
+                                                                         destination_xml_path,
+                                                                         selected_workspace.get(),
+                                                                         selected_node.get(),
+                                                                         'Group/Server Connection'))
+                    submit_button.grid(row=len(label_info) + 3, column=0, columnspan=2, pady=10)
+                elif url_bool:
+                    submit_button = tk.Button(tab_frame, text="Submit", font=("Arial", 12, "bold"), fg="white",
+                                              bg="black", padx=10, pady=3,
+                                              command=lambda: add_system(sap_system, source_xml_path,
+                                                                         destination_xml_path,
+                                                                         selected_workspace.get(),
+                                                                         selected_node.get(), 'FIORI/NWBC Connection'))
+                    submit_button.grid(row=len(label_info) + 3, column=0, columnspan=2, pady=10)
                 else:
-                    messagebox.showwarning("Warning", "The system you are trying to add is not a custom system. ")
+                    messagebox.showwarning("Error", "The system you are trying to add is not supported. ")
 
                 create_exit_restart_back_buttons(frame)
 
@@ -287,9 +260,7 @@ def add_system_window(menu_frame):
 
                         if messagebox.askyesno(dialog_title, dialog_text):
                             system_adding_tab(frame, sap_system)
-                        else:
-                            clear_frame(frame)
-                            add_system_window(frame)
+
 
                     else:
                         messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
@@ -313,17 +284,31 @@ def add_system_window(menu_frame):
 
                         if messagebox.askyesno(dialog_title, dialog_text):
                             system_adding_tab(frame, sap_system)
-                        else:
-                            clear_frame(frame)
-                            add_system_window(frame)
 
                     else:
                         messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
 
-
                 except Exception as e:
                     messagebox.showwarning("Error in get_group_server_system():", str(e))
                     logging.error(f"Error in get_group_server_system(): {str(e)}")
+
+            def get_fnwbc_system(frame):
+                try:
+                    sap_system = find_fiori_nwbc_system(source_xml_path, fiori_nwbc_urls.get())
+                    if sap_system is not None:
+                        system_info = f"Description: {sap_system.get('name')}\n\n" \
+                                      f"URL: {sap_system.get('url')}\n\n"
+                        dialog_text = f"Is this the SAP System you want to add?\n\n{system_info}"
+                        dialog_title = "Confirm System Details"
+
+                        if messagebox.askyesno(dialog_title, dialog_text):
+                            system_adding_tab(frame, sap_system)
+                    else:
+                        messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
+
+                except Exception as e:
+                    messagebox.showwarning("Error in get_fnwbc_system():", str(e))
+                    logging.error(f"Error in get_fnwbc_system(): {str(e)}")
 
             def on_connection_type_change(*args):
                 if connection_type.get() == 1:
@@ -344,7 +329,7 @@ def add_system_window(menu_frame):
                     group_server_form_frame.pack_forget()
                     fiori_nwbc_frame.pack()
 
-                    next_button_fnwbc.config(command=None)
+                    next_button_fnwbc.config(command=lambda: get_fnwbc_system(menu_frame))
 
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
