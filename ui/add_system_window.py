@@ -5,7 +5,7 @@ from tkinter import filedialog, messagebox
 import xml.etree.ElementTree as ET
 
 from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
-from ui.ui_utils import clear_frame, create_exit_restart_back_buttons
+from ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
 from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_system, \
     find_custom_system, find_group_server_connections, find_message_server, find_fiori_nwbc_system, \
     add_root_tag_to_empty_xml_file
@@ -338,7 +338,37 @@ def add_system_window(menu_frame):
             button_frame = tk.Frame(menu_frame)
             button_frame.pack(side="bottom")
             # Create 'Exit' and 'Back' buttons in the button_frame
-            create_exit_restart_back_buttons(button_frame)
+            back_button = tk.Button(
+                master=button_frame,
+                text="Restart",
+                background="black",
+                foreground="white",
+                width=25,
+                height=2,
+                command=lambda: restart_program()
+            )
+            back_button.pack(side='right', anchor='se', padx=5, pady=5)
+
+            exit_button = tk.Button(
+                master=button_frame,
+                text="Exit",
+                background="black",
+                foreground="white",
+                width=25,
+                height=2,
+                command=menu_frame.quit
+            )
+            exit_button.pack(side='right', anchor='se', padx=5, pady=5)
+            main_menu_button = tk.Button(master=button_frame, text="Back", background="black",
+                                         foreground="white",
+                                         width=25,
+                                         height=2,
+                                         command=lambda: add_system_window(menu_frame),
+                                         )
+            main_menu_button.pack(side='right', anchor='se', padx=5, pady=5)
+
+
+
 
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
