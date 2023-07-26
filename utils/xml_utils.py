@@ -524,9 +524,17 @@ def remove_duplicates(xml_file_path):
         # Identify duplicate items based on service name, SID, and server
         duplicates = df[df.duplicated(subset=['Service SID', 'Service Server'], keep=False)].copy()
 
+        # Add a new column to indicate the order of each item within its group of duplicates
+        duplicates['Duplicate Order'] = duplicates.groupby(['Service SID', 'Service Server']).cumcount()
+
+        # Only consider as duplicates those items that are not the last in their group
+        duplicates_to_remove = duplicates[
+            duplicates['Duplicate Order'] < duplicates.groupby(['Service SID', 'Service Server'])[
+                'Duplicate Order'].transform('max')]
+
         # Get unique UUIDs of duplicate items and services to remove
-        item_uuids = duplicates['Item Id'].unique().tolist()
-        service_uuids = duplicates['Service Id'].unique().tolist()
+        item_uuids = duplicates_to_remove['Item Id'].unique().tolist()
+        service_uuids = duplicates_to_remove['Service Id'].unique().tolist()
 
         # Remove duplicate items and services
         for item_id in item_uuids:
