@@ -11,4 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "Testing"
+
+      - name: setup test
+        run: echo "Testing"
