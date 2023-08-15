@@ -130,22 +130,37 @@ def regenerate_uuids_export_excel(xml_file_path):
 
 # Function to add a new custom application server type of system to xml file
 # Your find_custom_system() function is updated to return None when no service is found
-def find_custom_system(xml_file_path, applicationServer, instanceNumber,
-                       systemID):
+def find_custom_system(xml_file_path, applicationServer, instanceNumber, systemID):
     try:
         server_address = applicationServer + ":32" + instanceNumber
         sap_system = None
+        service_found = False
+
         # Parse the source XML file
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
 
         for service in root.findall(".//Service"):
-            if service.get('server') == server_address and service.get('systemid') == systemID:
-                sap_system = service
-                break
+            if service.get('server') == server_address:
+                if service.get('systemid') == systemID:
+                    sap_system = service
+                    service_found = True
+                    break
+                elif service.get('systemid') is None:
+                    raise Exception(f"Service with server address {server_address} "
+                                    f"doesn't have a designated system ID")
+                else:
+                    raise Exception(f"Service with server address {server_address} "
+                                    f"has a different system ID: {service.get('systemid')}")
+
+        if not service_found:
+            raise Exception(f"Service with server address {server_address} "
+                            f"not found in XML file")
+
         return sap_system
+
     except Exception as e:
-        messagebox.showwarning("Error in find_custom_system():", str(e))
+        print("Error in find_custom_system():", str(e))
         return None
 
 
@@ -356,52 +371,6 @@ def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, 
         messagebox.showwarning("Error in add_system():", str(e))
         logging.error(f"Error in add_system(): {str(e)}")
         return False
-
-
-def extract_from_nodes(xml_file_path):
-    try:
-        print("Processing XML file...")
-        # Parse the XML file
-        tree = ET.parse(xml_file_path)
-        root = tree.getroot()
-
-        # Get all Items
-        all_items = root.findall('.//Item')
-
-        # Create a new workspace element
-        workspace = ET.SubElement(root.find('.//Workspaces'), 'Workspace')
-        workspace.set('name', 'Extracted from Nodes')
-        workspace.set('uuid', str(uuid.uuid4()))
-        workspace.set('expanded', '0')
-
-        # Move the Item elements to the workspace
-        for item in all_items:
-            workspace.append(item)
-
-        # Remove other workspaces
-        workspaces_to_delete = []
-        for ws in root.findall('.//Workspace'):
-            if ws.get('name') != 'Extracted from Nodes':
-                workspaces_to_delete.append(ws.get('uuid'))
-
-        temp_xml_file_path = r"C:\Users\PR106797\PycharmProjects\uuid_manipulator\cache\temp.xml"
-        tree.write(temp_xml_file_path)
-
-        # Modify the temporary XML file
-        temp_root = remove_elements_from_xml(temp_xml_file_path, workspaces_to_delete, 'Workspace')
-
-        # Prompt user for output file path and name
-        output_file_path = input("Enter the output file path: ")
-        output_file_name = input("Enter the output file name: ")
-
-        # Save the modified XML to the specified location
-        output_file_path_with_name = os.path.join(output_file_path, output_file_name + '.xml')
-        temp_tree = ET.ElementTree(temp_root)
-        temp_tree.write(output_file_path_with_name)
-        print(f"XML file saved successfully at {output_file_path_with_name}")
-
-    except Exception as e:
-        print(f"An error occurred while processing the XML file: {str(e)}")
 
 
 def remove_elements_from_xml(xml_file_path, elements_to_remove, element_name):
