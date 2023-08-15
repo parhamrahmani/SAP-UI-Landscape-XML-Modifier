@@ -1,7 +1,4 @@
 import shutil
-import xml.etree.ElementTree as ET
-from tkinter import messagebox
-
 import pandas as pd
 from utils.xml_utils import *
 

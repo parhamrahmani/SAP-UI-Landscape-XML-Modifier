@@ -1,9 +1,7 @@
 import os
-import subprocess
 import sys
 import tkinter.font as tkfont
 import tkinter as tk
-from tkinter import messagebox
 
 BUTTON_WIDTH = 30
 BUTTON_HEIGHT = 2

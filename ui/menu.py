@@ -1,4 +1,3 @@
-import os
 
 import tkinter as tk
 from ui.add_system_window import add_system_window
@@ -8,9 +7,6 @@ from ui.remove_system_window import remove_system_window
 from ui.show_stats_window import show_stats_window
 from ui.ui_utils import clear_frame, customize_button, restart_program, show_red_warning
 
-from utils.excel_utils import export_excel
-from utils.xml_utils import extract_from_nodes
-import sys
 
 BUTTON_WIDTH = 30
 BUTTON_HEIGHT = 2

@@ -2,7 +2,6 @@ import logging
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import xml.etree.ElementTree as ET
 
 from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
 from ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
