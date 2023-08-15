@@ -19,14 +19,7 @@ jobs:
         python-version: 3.11
 
     - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        echo "Installed dependencies"
-
-    - name: Debugging Step
-      run: |
-        pwd
-        ls -al
+      run: pip install -r requirements.txt
 
     - name: Run tests
       run: python -m unittest discover tests
