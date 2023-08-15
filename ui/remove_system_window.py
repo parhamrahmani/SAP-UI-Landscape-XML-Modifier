@@ -5,7 +5,7 @@ from tkinter import messagebox
 import xml.etree.ElementTree as ET
 
 from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
-from ui.ui_utils import clear_frame, create_exit_restart_back_buttons
+from ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
 from utils.xml_utils import select_xml_file, find_custom_system, find_router, find_group_server_connections, \
     find_fiori_nwbc_system, find_message_server, remove_a_system
 
@@ -189,27 +189,29 @@ def remove_system_window(menu_frame):
                                                     app_server_entry.get(),
                                                     instance_num_entry.get(),
                                                     sys_id_entry.get())
+
                     if sap_system is not None:
                         system_info = f"Description: {sap_system.get('name')}\n\n" \
                                       f"Server Address: {sap_system.get('server')}\n\n" \
                                       f"System ID: {sap_system.get('systemid')}\n\n"
-                        routerid = sap_system.get('routerid')
-                        if routerid is not None:
-                            router = find_router(xml_path_entry.get(), routerid)
-                            router_address = router.get('name')
-                            system_info += f"Router: {router_address}\n\n"
 
-                        dialog_text = f"Is this the SAP System you want to add?\n\n{system_info}"
+
+                        dialog_text = f"Is this the SAP System you want to remove?\n\n{system_info}"
                         dialog_title = "Confirm System Details"
 
-                        if messagebox.askyesno(dialog_title, dialog_text):
+                        if messagebox.showinfo(dialog_title, dialog_text):
                             system_removal_tab(frame, sap_system)
 
+
                     else:
+
                         messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
+
                 except Exception as e:
-                    messagebox.showwarning("Error in get_sap_system():", str(e))
-                    logging.error(f"Error in get_sap_system(): {str(e)}")
+
+                    messagebox.showwarning("Error in get_custom_sap_system():", str(e))
+
+                    logging.error(f"Error in get_custom_sap_system(): {str(e)}")
 
             def get_group_server_system(frame):
                 try:
@@ -222,7 +224,7 @@ def remove_system_window(menu_frame):
                                       f"System ID: {sap_system.get('systemid')}\n\n" \
                                       f"Message Server Host: {message_server}\n\n" \
                                       f"SAPRouter: {router}\n\n"
-                        dialog_text = f"Is this the SAP System you want to add?\n\n{system_info}"
+                        dialog_text = f"Is this the SAP System you want to remove?\n\n{system_info}"
                         dialog_title = "Confirm System Details"
 
                         if messagebox.askyesno(dialog_title, dialog_text):
@@ -241,7 +243,7 @@ def remove_system_window(menu_frame):
                     if sap_system is not None:
                         system_info = f"Description: {sap_system.get('name')}\n\n" \
                                       f"URL: {sap_system.get('url')}\n\n"
-                        dialog_text = f"Is this the SAP System you want to add?\n\n{system_info}"
+                        dialog_text = f"Is this the SAP System you want to remove?\n\n{system_info}"
                         dialog_title = "Confirm System Details"
 
                         if messagebox.askyesno(dialog_title, dialog_text):
@@ -282,8 +284,34 @@ def remove_system_window(menu_frame):
             button_frame = tk.Frame(menu_frame)
             button_frame.pack(side="bottom")
             # Create 'Exit' and 'Back' buttons in the button_frame
-            create_exit_restart_back_buttons(button_frame)
+            back_button = tk.Button(
+                master=button_frame,
+                text="Restart",
+                background="black",
+                foreground="white",
+                width=25,
+                height=2,
+                command=lambda: restart_program()
+            )
+            back_button.pack(side='right', anchor='se', padx=5, pady=5)
 
+            exit_button = tk.Button(
+                master=button_frame,
+                text="Exit",
+                background="black",
+                foreground="white",
+                width=25,
+                height=2,
+                command=menu_frame.quit
+            )
+            exit_button.pack(side='right', anchor='se', padx=5, pady=5)
+            main_menu_button = tk.Button(master=button_frame, text="Back", background="black",
+                                         foreground="white",
+                                         width=25,
+                                         height=2,
+                                         command=lambda: remove_system_window(menu_frame),
+                                         )
+            main_menu_button.pack(side='right', anchor='se', padx=5, pady=5)
             # Attach the handler to the radio button selection variable
             connection_type.trace("w", on_connection_type_change)
 
