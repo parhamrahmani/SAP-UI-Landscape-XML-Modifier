@@ -1,13 +1,14 @@
 name: test
 
 on:
-  puah:
+  push:
     branches:
       - 'main'
 
-  pull requests:
+  pull_request:
     branches:
       - 'main'
+
 jobs:
   test:
     runs-on: ubuntu-latest
