@@ -1,7 +1,7 @@
 
 import tkinter as tk
-from ui.ui_utils import clear_frame, create_exit_restart_back_buttons,show_red_warning
-from utils.xml_utils import regenerate_uuids_export_excel, select_xml_file
+from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons,show_red_warning
+from src.utils.xml_utils import regenerate_uuids_export_excel, select_xml_file
 
 
 def regenerate_uuids_with_excel_report(menu_frame):

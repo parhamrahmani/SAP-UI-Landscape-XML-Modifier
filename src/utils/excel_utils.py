@@ -1,6 +1,5 @@
 import shutil
-import pandas as pd
-from utils.xml_utils import *
+from src.utils.xml_utils import *
 
 
 

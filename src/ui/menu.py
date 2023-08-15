@@ -1,11 +1,11 @@
 
 import tkinter as tk
-from ui.add_system_window import add_system_window
-from ui.export_excel_window import export_excel_window
-from ui.remove_duplications_window import remove_duplications_window
-from ui.remove_system_window import remove_system_window
-from ui.show_stats_window import show_stats_window
-from ui.ui_utils import clear_frame, customize_button, restart_program, show_red_warning
+from src.ui.add_system_window import add_system_window
+from src.ui.export_excel_window import export_excel_window
+from src.ui.remove_duplications_window import remove_duplications_window
+from src.ui.remove_system_window import remove_system_window
+from src.ui.show_stats_window import show_stats_window
+from src.ui.ui_utils import clear_frame, customize_button, restart_program, show_red_warning
 
 
 BUTTON_WIDTH = 30
@@ -45,7 +45,7 @@ def create_main_menu_buttons(menu_frame):
     customize_button(remove_system_button)
     remove_system_button.pack(pady=10, fill='both')
 
-    from ui.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
+    from src.ui.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
     regenerate_uuids_button = tk.Button(
         master=menu_frame,
         text="Regenerate UUIDs and export Excel Reports",

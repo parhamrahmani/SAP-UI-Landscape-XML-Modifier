@@ -1,7 +1,7 @@
 import unittest
 import xml.etree.ElementTree as ET
 
-from utils.xml_utils import regenerate_workspace_uuids, regenerate_service_uuids, remove_global_includes, \
+from src.utils.xml_utils import regenerate_workspace_uuids, regenerate_service_uuids, remove_global_includes, \
     find_custom_system, list_nodes_of_workspace, list_all_workspaces, find_message_server, find_router
 
 # Define the test global XML code

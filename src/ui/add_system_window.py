@@ -3,9 +3,9 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
-from ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
-from utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_system, \
+from src.ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
+from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
+from src.utils.xml_utils import list_all_workspaces, find_router, list_nodes_of_workspace, add_system, \
     find_custom_system, find_group_server_connections, find_message_server, find_fiori_nwbc_system, \
     add_root_tag_to_empty_xml_file
 
@@ -388,7 +388,7 @@ def add_system_window(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    from ui.menu import show_red_warning
+    from src.ui.menu import show_red_warning
 
     show_red_warning(menu_frame)
 

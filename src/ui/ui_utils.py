@@ -76,7 +76,7 @@ def create_exit_restart_back_buttons(frame):
        Args:
            frame (tk.Frame): The frame where the buttons will be added.
        """
-    from ui.menu import create_main_menu_buttons
+    from src.ui.menu import create_main_menu_buttons
 
     back_button = tk.Button(
         master=frame,

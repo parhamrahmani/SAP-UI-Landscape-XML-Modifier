@@ -1,0 +1,16 @@
+name: test
+
+on:
+  puah:
+    branches:
+      - 'main'
+
+  pull requests:
+    branches:
+      - 'main'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Testing"

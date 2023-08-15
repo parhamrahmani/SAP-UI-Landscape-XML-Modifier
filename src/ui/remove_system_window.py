@@ -3,9 +3,9 @@ import tkinter as tk
 from tkinter import messagebox
 import xml.etree.ElementTree as ET
 
-from ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
-from ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
-from utils.xml_utils import select_xml_file, find_custom_system, find_router, find_group_server_connections, \
+from src.ui.forms import create_custom_system_form, create_group_server_form, create_fiori_nwbc_form
+from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
+from src.utils.xml_utils import select_xml_file, find_custom_system, find_router, find_group_server_connections, \
     find_fiori_nwbc_system, find_message_server, remove_a_system
 
 
@@ -26,7 +26,7 @@ def remove_system_window(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    from ui.menu import show_red_warning
+    from src.ui.menu import show_red_warning
 
     show_red_warning(menu_frame)
 

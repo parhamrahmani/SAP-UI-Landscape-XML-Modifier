@@ -1,17 +1,14 @@
 import logging
 import os
 import sys
-from tkinter import messagebox, simpledialog, filedialog
+from tkinter import messagebox, filedialog
 import tkinter as tk
-from xml import dom
 
-from utils.excel_utils import *
 import lxml.etree as le
 import uuid
 import xml.etree.ElementTree as ET
-from utils.excel_utils import generate_excel_files
+from src.utils.excel_utils import generate_excel_files
 import pandas as pd
-import xml.dom.minidom
 
 
 # Function to regenerate UUIDs for workspaces

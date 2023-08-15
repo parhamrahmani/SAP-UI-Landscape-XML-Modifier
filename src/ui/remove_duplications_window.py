@@ -1,7 +1,7 @@
 import tkinter as tk
 
-from ui.ui_utils import show_red_warning, clear_frame, create_exit_restart_back_buttons
-from utils.xml_utils import remove_duplicates, select_xml_file
+from src.ui.ui_utils import show_red_warning, clear_frame, create_exit_restart_back_buttons
+from src.utils.xml_utils import remove_duplicates, select_xml_file
 
 
 def remove_duplications_window(menu_frame):
