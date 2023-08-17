@@ -7,26 +7,10 @@ import tkinter as tk
 import lxml.etree as le
 import uuid
 import xml.etree.ElementTree as ET
+
+from src.ui.dialog_boxes import DialogBoxes
 from src.utils.excel_utils import generate_excel_files
 import pandas as pd
-
-
-# Function to regenerate UUIDs for workspaces
-def select_xml_file(xml_path_entry):
-    """
-        Function for opening a file dialog to select an XML file,
-        and populating the xml_path_entry field with the chosen file's path.
-        """
-    xml_file_path = filedialog.askopenfilename(initialdir="/", title="Select source XML file",
-                                               filetypes=(("xml files", "*.xml"), ("all files", "*.*")))
-    if xml_file_path:
-        xml_path_entry.delete(0, tk.END)  # Clear the entry field
-        xml_path_entry.insert(tk.END, xml_file_path)  # Insert the selected file path
-
-
-def open_folder_containing_file(xml_file_path):
-    folder_path = os.path.dirname(xml_file_path)
-    os.startfile(folder_path)
 
 
 def regenerate_workspace_uuids(workspaces):
@@ -118,7 +102,7 @@ def regenerate_uuids_export_excel(xml_file_path):
                             + "\n\n" + "General Excel file generated: \n" + general_excel_file
                             + "\n\n" + "Duplicates Excel file generated: \n" + duplicates_excel_file)
 
-        open_folder_containing_file(output_file)
+        DialogBoxes.open_folder_containing_file(output_file)
 
     except Exception as e:
         messagebox.showerror("Error!", f"An error occurred while processing the XML file: {str(e)}")
@@ -127,9 +111,8 @@ def regenerate_uuids_export_excel(xml_file_path):
 
 # Function to add a new custom application server type of system to xml file
 # Your find_custom_system() function is updated to return None when no service is found
-def find_custom_system(xml_file_path, applicationServer, instanceNumber, systemID):
+def find_custom_system(xml_file_path, server_address, systemid):
     try:
-        server_address = applicationServer + ":32" + instanceNumber
         sap_system = None
         service_found = False
 
@@ -139,16 +122,22 @@ def find_custom_system(xml_file_path, applicationServer, instanceNumber, systemI
 
         for service in root.findall(".//Service"):
             if service.get('server') == server_address:
-                if service.get('systemid') == systemID:
+                if service.get('systemid') == systemid:
                     sap_system = service
                     service_found = True
                     break
                 elif service.get('systemid') is None:
-                    raise Exception(f"Service with server address {server_address} "
-                                    f"doesn't have a designated system ID")
+                    messagebox.showwarning("Warning!\n\n System ID undefined. \n\n",
+                                           f"Service with server address {server_address} "
+                                           f"doesn't have a designated system ID\n\n"
+                                           f"System Info: {service.get('name')}\n"
+                                           f"Server Address: {service.get('server')}\n")
+                    sap_system = service
+                    service_found = True
+                    break
                 else:
-                    raise Exception(f"Service with server address {server_address} "
-                                    f"has a different system ID: {service.get('systemid')}")
+                    raise Exception(f"Service with \nserver address: {server_address}\n "
+                                    f"has a different \nsystem ID: {service.get('systemid')}")
 
         if not service_found:
             raise Exception(f"Service with server address {server_address} "
@@ -158,6 +147,8 @@ def find_custom_system(xml_file_path, applicationServer, instanceNumber, systemI
 
     except Exception as e:
         print("Error in find_custom_system():", str(e))
+        logging.error("Error in find_custom_system():", str(e))
+        messagebox.showerror("Error!", f"An error occurred while processing the XML file:\n{str(e)}")
         return None
 
 
@@ -225,7 +216,7 @@ def list_nodes_of_workspace(xml_file_path, workspace_name):
         return []  # Return an empty list instead of None
 
 
-def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, node_name, connection_type):
+def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, node_name, connection_type, new_name):
     try:
         status = False
         # Parse the destination XML file
@@ -234,6 +225,8 @@ def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, 
         # Parse the root XML file
         source_tree = ET.parse(root_xml_path)
         source_root = source_tree.getroot()
+
+        sap_system.set('name', new_name)
 
         # Add service to the destination XML file
         if root.find(".//Services") is None:
@@ -358,7 +351,7 @@ def add_system(sap_system, root_xml_path, destination_xml_path, workspace_name, 
                                                 "file.\n\n")
 
                         if messagebox.askyesno("Question", "Do you want to open the destination XML file?"):
-                            open_folder_containing_file(destination_xml_path)
+                            DialogBoxes.open_folder_containing_file(destination_xml_path)
                             python = sys.executable
                             os.execl(python, python, *sys.argv)
                         return status
@@ -520,7 +513,7 @@ def remove_duplicates(xml_file_path):
         output_file = os.path.join(output_path, output_name + '.xml')
         tree.write(output_file)
         messagebox.showinfo("Success!", f"Duplications removed. Output file saved to: {output_file}")
-        open_folder_containing_file(output_file)
+        DialogBoxes.open_folder_containing_file(output_file)
 
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while removing duplications: {str(e)}")
@@ -609,66 +602,68 @@ def get_all_custom_sap_gui_info(xml_file_path):
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
     services = root.findall(".//Service")
+    sap_gui_names = []
     sap_gui_server_addresses = []
     sap_gui_system_ids = []
-    sap_gui_instance_numbers = []
+
     for service in services:
         if service.get('type') == 'SAPGUI':
             if service.get('server') is not None:
                 server = service.get('server')
-                if ':32' in server:
-                    address, port_with_extra_32 = server.split(':')
-                    port = port_with_extra_32.split("32")[1]
-                    sap_gui_server_addresses.append(address)
-                    if port not in sap_gui_instance_numbers:
-                        sap_gui_instance_numbers.append(port)
-                    sap_gui_system_ids.append(service.get('systemid'))
+                name = service.get('name')
+                systemid = None
+                if service.get('systemid') is not None:
+                    systemid = service.get('systemid')
+                if server not in sap_gui_server_addresses:
+                    if systemid is not None and systemid not in sap_gui_system_ids:
+                        sap_gui_server_addresses.append(server)
+                        sap_gui_names.append(name)
+                        sap_gui_system_ids.append(systemid)
+                    else:
+                        sap_gui_server_addresses.append(server)
+                        sap_gui_names.append(name)
 
-    return sap_gui_server_addresses, sap_gui_instance_numbers, sap_gui_system_ids
+    return sap_gui_server_addresses, sap_gui_names, sap_gui_system_ids
 
 
-def find_all_system_ids_based_on_server_address(xml_file_path, server_address, server_instance_number):
+def find_system_names_based_on_server_address(xml_file_path, server_address):
     try:
         # Parse the XML file
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
-        server = server_address + ":32" + server_instance_number
-        system_ids = []
+        sys_names = []
 
         for service in root.findall(".//Service"):
             if service.get('server') is not None:
-                if service.get('server') == server:
-                    system_ids.append(service.get('systemid'))
+                if service.get('server') == server_address:
+                    sys_names.append(service.get('name'))
 
-        return system_ids
+        return sys_names
 
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while listing system IDs: {str(e)}")
         logging.error(f"An error occurred while listing system IDs: {str(e)}")
 
 
-def find_all_instance_numbers_based_on_server_address(xml_file_path, server_address):
+def find_system_info_based_on_sid(xml_file_path, sid):
     try:
         # Parse the XML file
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
-        instance_numbers = []
+        server_addresses = []
+        system_names = []
 
         for service in root.findall(".//Service"):
-            if service.get('server') is not None:
-                if server_address in service.get('server'):
-                    server = service.get('server')
-                    if ':32' in server:
-                        address, port_with_extra_32 = server.split(':')
-                        port = port_with_extra_32.split("32")[1]
-                        if port not in instance_numbers:
-                            instance_numbers.append(port)
+            if service.get('systemid') is not None:
+                if service.get('systemid') == sid:
+                    server_addresses.append(service.get('server'))
+                    system_names.append(service.get('name'))
 
-        return instance_numbers
-
+        return server_addresses, system_names
     except Exception as e:
-        messagebox.showerror("Error", f"An error occurred while listing instance numbers: {str(e)}")
+        messagebox.showerror("Error", f"An error occurred while listing server addresses: {str(e)}")
         logging.error(f"An error occurred while listing instance numbers: {str(e)}")
+        return None
 
 
 def find_group_server_connections(xml_file_path, system_id, message_server, router):
@@ -729,6 +724,25 @@ def find_sap_routers_based_on_system_id_message_server(xml_file_path, system_id,
         logging.error(f"An error occurred while finding SAP router: {str(e)}")
 
 
+def find_all_fiori_nwbc_system_names(xml_file_path):
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        fnwbc_system_names = []
+
+        for service in root.findall(".//Service"):
+            if service.get('type') == 'FIORI' or service.get('type') == 'NWBC':
+                fnwbc_system_names.append(service.get('name'))
+
+        return fnwbc_system_names
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while getting Fiori/NWBC system names: {str(e)}")
+        logging.error(f"An error occurred while getting Fiori/NWBC system names: {str(e)}")
+
+
+# def find_url_based_on_name(xml_file_path, name):
+
 def find_fiori_nwbc_system(xml_file_path, url):
     try:
         tree = ET.parse(xml_file_path)
@@ -759,3 +773,23 @@ def add_root_tag_to_empty_xml_file(xml_file_path):
         print(f"The file {xml_file_path} does not exist.")
     except Exception as e:
         print(f"An error occurred: {e}")
+
+
+def find_system_info_on_system_id(xml_file_path, system_id):
+    try:
+        # Parse the XML file
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        server_addresses = []
+        names = []
+        for service in root.findall(".//Service"):
+            if service.get('server') is not None and service.get('systemid') is not None:
+                if service.get('systemid') == system_id:
+                    server_addresses.append(service.get('server'))
+                    names.append(service.get('name'))
+
+        return server_addresses, names
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while listing server addresses: {str(e)}")
+        logging.error(f"An error occurred while listing server addresses: {str(e)}")
