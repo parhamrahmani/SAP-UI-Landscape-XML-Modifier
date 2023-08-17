@@ -1,78 +1,110 @@
 import tkinter as tk
-from tkinter import ttk
-
-from src.utils.xml_utils import list_system_ids_for_group_server_connection_entry, find_message_server_based_on_system_id, \
-    get_all_routers, get_all_urls, get_all_custom_sap_gui_info, find_all_system_ids_based_on_server_address, \
-    find_all_instance_numbers_based_on_server_address, \
-    find_sap_routers_based_on_system_id_message_server
+from tkinter import ttk, messagebox
+from ttkwidgets.autocomplete import AutocompleteEntry
+from src.utils.xml_utils import list_system_ids_for_group_server_connection_entry, \
+    find_message_server_based_on_system_id, \
+    get_all_routers, get_all_urls, get_all_custom_sap_gui_info, \
+ \
+    find_sap_routers_based_on_system_id_message_server, find_system_info_on_system_id, \
+    find_system_info_based_on_sid, find_system_names_based_on_server_address, find_all_fiori_nwbc_system_names
 
 WIDTH = 50
 FONT_SIZE = 10
 
 
 def create_custom_system_form(xml_file_path, frame):
+    sys_addresses, sys_names, sys_ids = get_all_custom_sap_gui_info(xml_file_path)
     # Create a separate frame to contain the form
     custom_system_form_frame = tk.Frame(frame, bg='white')
     custom_system_form_frame.pack(pady=40)
 
+    # Sort sys_names alphabetically
+    sorted_names = sorted(sys_names)
+    sys_ids = sorted(sys_ids)
+    sys_addresses = sorted(sys_addresses)
+
     # Create the form fields
-    sys_addresses, sys_instances, sys_ids = get_all_custom_sap_gui_info(xml_file_path)
-    application_server_combobox = ttk.Combobox(custom_system_form_frame, values=sys_addresses, width=WIDTH)
-    application_server_combobox.grid(row=0, column=1, padx=5, pady=5, sticky='we')
-    application_server_label = tk.Label(custom_system_form_frame, text="Application Server: ", bg='white', fg='black',
+
+    names_combobox = ttk.Combobox(custom_system_form_frame, values=sorted_names, width=WIDTH)
+    names_combobox.grid(row=2, column=1, padx=5, pady=5, sticky='we')
+    name_label = tk.Label(custom_system_form_frame, text="Name: ", bg='white', fg='black',
+                          font=("Arial", FONT_SIZE))
+    name_label.grid(row=2, column=0, padx=5, pady=5)
+
+    application_server_combobox = ttk.Combobox(custom_system_form_frame,
+                                               values=sys_addresses, width=WIDTH)
+    application_server_combobox.grid(row=1, column=1, padx=5, pady=5, sticky='we')
+    application_server_label = tk.Label(custom_system_form_frame, text="Server Address: ", bg='white', fg='black',
                                         font=("Arial", FONT_SIZE))
-    application_server_label.grid(row=0, column=0, padx=5, pady=5)
+    application_server_label.grid(row=1, column=0, padx=5, pady=5)
 
-    instance_options = sys_instances
-    instance_number_combobox = ttk.Combobox(custom_system_form_frame, values=instance_options, width=WIDTH)
-    instance_number_combobox.grid(row=1, column=1, padx=5, pady=5, sticky='we')
-    instance_number_label = tk.Label(custom_system_form_frame, text="Instance Number: ", bg='white', fg='black',
-                                     font=("Arial", FONT_SIZE))
-    instance_number_label.grid(row=1, column=0, padx=5, pady=5)
-
-    system_id_options = sys_ids
+    system_id_options = [''] + sys_ids[1:]
     system_id_combobox = ttk.Combobox(custom_system_form_frame, values=system_id_options, width=WIDTH)
-    system_id_combobox.grid(row=2, column=1, padx=5, pady=5, sticky='we')
+    system_id_combobox.grid(row=0, column=1, padx=5, pady=5, sticky='we')
 
     system_id_label = tk.Label(custom_system_form_frame, text="System ID: ", bg='white', fg='black',
                                font=("Arial", FONT_SIZE))
-    system_id_label.grid(row=2, column=0, padx=5, pady=5)
+    system_id_label.grid(row=0, column=0, padx=5, pady=5)
+
+    # Define a filter function
+    def filter_options(combobox, options):
+        filter_text = combobox.get()
+        filtered_options = [option for option in options if filter_text.lower() in option.lower()]
+        combobox['values'] = filtered_options
+
+    # Define a callback function for filtering options
+    def on_combobox_key_release(event):
+        filter_options(event.widget, system_id_options)  # Replace name_options with the appropriate options list
+
+    # Bind the callback function to the KeyRelease event for each combo box
+    system_id_combobox.bind('<KeyRelease>', on_combobox_key_release)
 
     def update_options(*args):
+        sys_name = names_combobox.get()
+        sys_id = system_id_combobox.get()
         server_address = application_server_combobox.get()
 
-        # Clear the instance number and system ID comboboxes
-        instance_number_combobox['values'] = []
-        system_id_combobox['values'] = []
-        instance_number_combobox.set('')
-        system_id_combobox.set('')
+        if sys_id and sys_id != '':
+            server_addresses, system_names = find_system_info_based_on_sid(xml_file_path, sys_id)
+            names_combobox['values'] = system_names
+            application_server_combobox['values'] = server_addresses
 
-        # Update instance numbers
-        instance_numbers = find_all_instance_numbers_based_on_server_address(xml_file_path, server_address)
-        if len(instance_numbers) == 1:
-            instance_number_combobox.insert(0, instance_numbers[0])
-        else:
-            instance_number_combobox['values'] = instance_numbers
-
-        # Update system IDs
-        server_instance = instance_number_combobox.get()
-        if server_address and server_instance:  # Only proceed if server_address and server_instance are not empty
-            system_ids = find_all_system_ids_based_on_server_address(xml_file_path, server_address, server_instance)
-            if len(system_ids) == 1:
-                system_id_combobox.insert(0, system_ids[0])
+            if len(server_addresses) == 1 and len(system_names) == 1:
+                names_combobox.set(system_names[0])
+                application_server_combobox.set(server_addresses[0])
             else:
-                system_id_combobox['values'] = system_ids
-        else:  # If server_address or server_instance is empty
-            system_id_combobox['values'] = []  # clear the combobox values
+                sys_name = names_combobox.get()
+                server_address = application_server_combobox.get()
 
-    # Run update_options whenever application_server_combobox or instance_number_combobox changes
-    application_server_combobox.bind('<KeyRelease>', update_options)
+                if sys_name in system_names:
+                    names_combobox.set(sys_name)
+                else:
+                    names_combobox.set('')
+
+                if server_address in server_addresses:
+                    application_server_combobox.set(server_address)
+                    system_names = find_system_names_based_on_server_address(xml_file_path, server_address)
+                    names_combobox['values'] = system_names
+                    names_combobox.set(system_names[0])
+                else:
+                    application_server_combobox.set('Please select a server address ')  # Select the first address
+                    system_names = find_system_names_based_on_server_address(xml_file_path, server_addresses[0])
+                    names_combobox['values'] = system_names
+                    names_combobox.set('')
+
+        else:
+            application_server_combobox.set('')
+            names_combobox.set('')
+            system_id_combobox['values'] = [''] + sys_ids[1:]
+            application_server_combobox['values'] = sys_addresses
+            names_combobox['values'] = sys_names
+
+    # Bind the update_options function to the ComboboxSelected event
+    system_id_combobox.bind('<<ComboboxSelected>>', update_options)
     application_server_combobox.bind('<<ComboboxSelected>>', update_options)
+    names_combobox.bind('<<ComboboxSelected>>', update_options)
 
-    instance_number_combobox.bind('<KeyRelease>', update_options)
-    instance_number_combobox.bind('<<ComboboxSelected>>', update_options)
-
-    return application_server_combobox, instance_number_combobox, system_id_combobox, custom_system_form_frame
+    return application_server_combobox, names_combobox, system_id_combobox, custom_system_form_frame
 
 
 def create_group_server_form(xml_file_path, frame):
@@ -83,7 +115,8 @@ def create_group_server_form(xml_file_path, frame):
     # Create the form fields
     sysids = list_system_ids_for_group_server_connection_entry(xml_file_path)
 
-    system_id_combobox = ttk.Combobox(group_server_form_frame, values=sysids, font=("Arial", FONT_SIZE), width=WIDTH)
+    system_id_combobox = ttk.Combobox(group_server_form_frame, values=[''] + sysids[1:], font=("Arial", FONT_SIZE),
+                                      width=WIDTH)
     system_id_combobox.grid(row=0, column=1, padx=5, pady=5, sticky='we')
 
     system_id_label = tk.Label(group_server_form_frame, text="System ID", bg='white', fg='black',
@@ -102,7 +135,7 @@ def create_group_server_form(xml_file_path, frame):
         system_id = system_id_combobox.get()
 
         # Update message server
-        if system_id:  # Only proceed if system_id is not empty
+        if system_id and system_id != '':  # Only proceed if system_id is not empty
             message_server = find_message_server_based_on_system_id(xml_file_path, system_id)
             message_server_entry.delete(0, tk.END)  # clear the entry field
             if message_server is not None:
@@ -111,7 +144,7 @@ def create_group_server_form(xml_file_path, frame):
             message_server_entry.delete(0, tk.END)  # clear the entry field
 
         # Update router combobox
-        if system_id:  # Only proceed if system_id is not empty
+        if system_id and system_id != '':  # Only proceed if system_id is not empty
             message_server = find_message_server_based_on_system_id(xml_file_path, system_id)
             sap_routers = find_sap_routers_based_on_system_id_message_server(xml_file_path, system_id,
                                                                              message_server.get('uuid'))
@@ -146,35 +179,31 @@ def create_fiori_nwbc_form(xml_file_path, frame):
     fiori_nwbc_form_frame.pack(pady=40)
 
     # Create the form fields
-    fiori_nwbc_name_entry = tk.Entry(fiori_nwbc_form_frame, bg='white', fg='black', font=("Arial", FONT_SIZE),
-                                     width=WIDTH)
-    fiori_nwbc_name_entry.grid(row=0, column=1, padx=5, pady=5, sticky='we')
+    fiori_nwbc_system_options = find_all_fiori_nwbc_system_names(xml_file_path)
+    fiori_nwbc_name_combobox = ttk.Combobox(fiori_nwbc_form_frame, values=[''] + fiori_nwbc_system_options[1:],
+                                            font=("Arial", FONT_SIZE),
+                                            width=WIDTH)
+    fiori_nwbc_name_combobox.grid(row=0, column=1, padx=5, pady=5, sticky='we')
     fiori_nwbc_name_label = tk.Label(fiori_nwbc_form_frame, text="Name: ", bg='white', fg='black',
                                      font=("Arial", FONT_SIZE))
     fiori_nwbc_name_label.grid(row=0, column=0, padx=5, pady=5)
 
     urls = get_all_urls(xml_file_path)
     url_options = [url.get('url') for url in urls]
-    url_combobox = ttk.Combobox(fiori_nwbc_form_frame, values=url_options, font=("Arial", FONT_SIZE), width=WIDTH)
+    url_combobox = ttk.Combobox(fiori_nwbc_form_frame, values=[''] + url_options[1:0], font=("Arial", FONT_SIZE),
+                                width=WIDTH)
     url_combobox.grid(row=1, column=1, padx=5, pady=5, sticky='we')
     url_label = tk.Label(fiori_nwbc_form_frame, text="URL: ", bg='white', fg='black', font=("Arial", FONT_SIZE))
     url_label.grid(row=1, column=0, padx=5, pady=5)
 
-    def update_name_entry(*args):
-        url_address = url_combobox.get()
-        url_name = None
-        if url_address:  # Only proceed if url_address is not empty
-            for url in urls:
-                if url.get('url') == url_address:
-                    url_name = url.get('name')  #
-                    fiori_nwbc_name_entry.delete(0, tk.END)  # clear the entry field
-                    if url_name is not None:
-                        fiori_nwbc_name_entry.insert(0, url_name)
-                    break
-        else:  # If system_id is empty
-            fiori_nwbc_name_entry.delete(0, tk.END)  # clear the entry field
+    def update_options(*args):
+        name = fiori_nwbc_name_combobox.get()
+        if name and name != '':
+            url = find_url_based_on_name(xml_file_path, name)
+            url_combobox.delete(0, tk.END)
+            url_combobox.insert(0, url.get('url'))
 
-    url_combobox.bind('<KeyRelease>', update_name_entry)
-    url_combobox.bind('<<ComboboxSelected>>', update_name_entry)
+    url_combobox.bind('<KeyRelease>', update_options)
+    url_combobox.bind('<<ComboboxSelected>>', update_options)
 
-    return fiori_nwbc_name_entry, url_combobox, fiori_nwbc_form_frame
+    return fiori_nwbc_name_combobox, url_combobox, fiori_nwbc_form_frame
