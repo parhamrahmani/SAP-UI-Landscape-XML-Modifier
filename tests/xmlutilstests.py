@@ -2,7 +2,8 @@ import unittest
 import xml.etree.ElementTree as ET
 
 from src.utils.xml_utils import regenerate_workspace_uuids, regenerate_service_uuids, remove_global_includes, \
-    find_custom_system, list_nodes_of_workspace, list_all_workspaces, find_message_server, find_router
+    find_custom_system, list_nodes_of_workspace, list_all_workspaces, find_message_server, find_router, \
+     find_system_info_on_system_id
 
 # Define the test global XML code
 XML_CODE = '''<Landscape version="1" updated="2023-07-26T14:14:41" origin="" generator="RSLSMT"> <Workspaces> 
@@ -17,9 +18,11 @@ uuid="d630d047-4e9b-4e04-9454-595a8487fdca" name="TestNode4" expanded="0" hidden
 uuid="d630d047-4e9b-4e04-9454-595a8487fdca" serviceid="d64963be-1300-4ccb-8825-28c8a1865004"/> </Node> </Workspace> 
 </Workspaces> <Services> <Service uuid="80cc5f49-0678-4047-8a9d-9a22d8606f5c" name="Test Service GUI" 
 server="555.555.555.555:3200" type="SAPGUI" sncop="-1" mode="1" routerid="40c0cde5-3562-46d1-9464-98ec85a96f13" 
-dcpg="2" sapcpg="1100"/> <Service uuid="41f6868e-a9ec-4904-bf24-62bd0f1929e0" name="tEST GUI" 
+dcpg="2" sapcpg="1100"/> <Service uuid="41f6868e-a9ec-4904-bf24-62bd0f1929e0" name="Test Service GUI" 
 server="test.sap.shcdc.de:3200" type="SAPGUI" sncop="-1" mode="1" systemid="MK6" 
-routerid="b893ec1d-66dc-46d1-8230-4de8bb78518f" dcpg="2" sapcpg="1100"/> <Service 
+routerid="b893ec1d-66dc-46d1-8230-4de8bb78518f" dcpg="2" sapcpg="1100"/>
+ <Service uuid="fe04fb06-8aa4-4229-b6e6-a0f77eb5dade" name="Brandenburg Klinikum BRE" server="10.1.101.82:3200" type="SAPGUI" sncop="-1" mode="1" systemid="BRE" routerid="205dd6c6-5ef5-4da4-940f-ddd740c3035c" dcpg="2" sapcpg="1100"/>
+ <Service 
 uuid="639ed096-b42d-481d-8411-2f1d5c2cf8e4" name="Test Service NWBC" type="NWBC" 
 url="http://sapservertest.sap.test.test.test:8010/sap/test/nwbc" slc="0"/> <Service 
 uuid="8e7bafac-ecc4-4796-8f3e-93e7c0598df8" name="Test Service Fiori" type="FIORI" 
@@ -117,11 +120,15 @@ class XmlUtilsTests(unittest.TestCase):
 
         # Test successful cases
 
-        sap_system = find_custom_system(temp_xml_path, "test.sap.shcdc.de", "00", "MK6")
+        sap_system = find_custom_system(temp_xml_path, "test.sap.shcdc.de:3200", "MK6")
         self.assertIsNotNone(sap_system)
         self.assertEqual(sap_system.get('server'), "test.sap.shcdc.de:3200")
         self.assertEqual(sap_system.get('systemid'), "MK6")
-        print(sap_system.get('server') + " actual\n" + "test.sap.shcdc.de:3200" + " expected\n")
+
+        sap_system = find_custom_system(temp_xml_path, "10.1.101.82:3200", "BRE")
+        self.assertIsNotNone(sap_system)
+        self.assertEqual(sap_system.get('server'), "10.1.101.82:3200")
+        self.assertEqual(sap_system.get('systemid'), "BRE")
 
         # Clean up by deleting the temporary XML file
         import os
@@ -159,6 +166,19 @@ class XmlUtilsTests(unittest.TestCase):
         node_names = list_nodes_of_workspace(self.xml_file_path, workspace_name)
         expected_node_names = ["TestNode1", "TestNode2", "TestNode3", "TestNode4"]
         self.assertEqual(node_names, expected_node_names)
+
+    def test_find_system_info_on_system_id(self):
+        # Create a temporary XML file with the sample XML code
+        temp_xml_path = "temp_xml_file.xml"
+        with open(temp_xml_path, "w") as temp_xml_file:
+            temp_xml_file.write(XML_CODE)
+        # Test Function
+        sys_id = "MK6"
+        server_addresses, system_names = find_system_info_on_system_id(temp_xml_path, sys_id)
+        expected_system_names = ["Test Service GUI"]
+        expected_server_address = ["test.sap.shcdc.de:3200"]
+        self.assertEqual(server_addresses, expected_server_address)
+        self.assertEqual(system_names, expected_system_names)
 
 
 if __name__ == '__main__':
