@@ -6,7 +6,8 @@ from src.utils.xml_utils import list_system_ids_for_group_server_connection_entr
     get_all_routers, get_all_urls, get_all_custom_sap_gui_info, \
  \
     find_sap_routers_based_on_system_id_message_server, find_system_info_on_system_id, \
-    find_system_info_based_on_sid, find_system_names_based_on_server_address, find_all_fiori_nwbc_system_names
+    find_system_info_based_on_sid, find_system_names_based_on_server_address, find_all_fiori_nwbc_system_names, \
+    find_urls_based_on_name
 
 WIDTH = 50
 FONT_SIZE = 10
@@ -189,8 +190,8 @@ def create_fiori_nwbc_form(xml_file_path, frame):
     fiori_nwbc_name_label.grid(row=0, column=0, padx=5, pady=5)
 
     urls = get_all_urls(xml_file_path)
-    url_options = [url.get('url') for url in urls]
-    url_combobox = ttk.Combobox(fiori_nwbc_form_frame, values=[''] + url_options[1:0], font=("Arial", FONT_SIZE),
+
+    url_combobox = ttk.Combobox(fiori_nwbc_form_frame, values=urls, font=("Arial", FONT_SIZE),
                                 width=WIDTH)
     url_combobox.grid(row=1, column=1, padx=5, pady=5, sticky='we')
     url_label = tk.Label(fiori_nwbc_form_frame, text="URL: ", bg='white', fg='black', font=("Arial", FONT_SIZE))
@@ -198,12 +199,20 @@ def create_fiori_nwbc_form(xml_file_path, frame):
 
     def update_options(*args):
         name = fiori_nwbc_name_combobox.get()
-        if name and name != '':
-            url = find_url_based_on_name(xml_file_path, name)
-            url_combobox.delete(0, tk.END)
-            url_combobox.insert(0, url.get('url'))
 
-    url_combobox.bind('<KeyRelease>', update_options)
+        if name and name != '':
+            found_urls = find_urls_based_on_name(xml_file_path, name)
+            url_combobox['values'] = found_urls
+
+            # Autocomplete the URL if there's only one URL available
+            if len(found_urls) == 1:
+                url_combobox.set(found_urls[0])
+            else:
+                url_combobox.set('Please select a url')  # Clear the URL Combobox
+
+        else:
+            url_combobox.set('')  # Clear the URL Combobox
     url_combobox.bind('<<ComboboxSelected>>', update_options)
+    fiori_nwbc_name_combobox.bind('<<ComboboxSelected>>', update_options)
 
     return fiori_nwbc_name_combobox, url_combobox, fiori_nwbc_form_frame

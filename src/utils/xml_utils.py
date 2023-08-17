@@ -586,8 +586,8 @@ def get_all_urls(xml_file_path):
         urls = []
         for service in services:
             # Assuming the service name is also an attribute of the Service node
-            if service.get('url') is not None and service.get('name') is not None:
-                urls.append({'name': service.get('name'), 'url': service.get('url')})
+            if service.get('url'):
+                urls.append(service.get('url'))
 
         # Return the list of URLs
         return urls
@@ -793,3 +793,20 @@ def find_system_info_on_system_id(xml_file_path, system_id):
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while listing server addresses: {str(e)}")
         logging.error(f"An error occurred while listing server addresses: {str(e)}")
+
+
+def find_urls_based_on_name(xml_file_path, name):
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        urls = []
+
+        for service in root.findall(".//Service"):
+            if service.get('name') == name:
+                urls.append(service.get('url'))
+
+        return urls
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while finding URL: {str(e)}")
+        logging.error(f"An error occurred while finding URL: {str(e)}")
