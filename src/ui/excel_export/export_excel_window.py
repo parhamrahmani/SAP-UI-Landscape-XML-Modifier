@@ -1,7 +1,9 @@
 import tkinter as tk
+
+from src.ui.dialog_boxes import DialogBoxes
 from src.ui.ui_utils import clear_frame, show_red_warning, create_exit_restart_back_buttons
 from src.utils.excel_utils import export_excel
-from src.utils.xml_utils import select_xml_file
+
 
 
 def export_excel_window(menu_frame):
@@ -37,7 +39,8 @@ def export_excel_window(menu_frame):
     entry_frame.pack(pady=10)
     xml_path_entry = tk.Entry(entry_frame, width=50)  # Entry widget to input XML file path
     xml_path_entry.pack(side='left')
-    browse_button = tk.Button(entry_frame, text="Browse", command=lambda: select_xml_file(xml_path_entry),
+    browse_button = tk.Button(entry_frame, text="Browse", command=lambda: DialogBoxes.xml_selection(xml_path_entry,
+                                                                                        "Select XML File"),
                               background="black",
                               foreground="white")
     browse_button.pack(side='left', padx=5)

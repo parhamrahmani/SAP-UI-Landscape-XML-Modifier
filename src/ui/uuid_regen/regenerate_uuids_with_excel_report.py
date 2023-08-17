@@ -1,7 +1,8 @@
-
 import tkinter as tk
-from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons,show_red_warning
-from src.utils.xml_utils import regenerate_uuids_export_excel, select_xml_file
+
+from src.ui.dialog_boxes import DialogBoxes
+from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons, show_red_warning
+from src.utils.xml_utils import regenerate_uuids_export_excel
 
 
 def regenerate_uuids_with_excel_report(menu_frame):
@@ -43,7 +44,8 @@ def regenerate_uuids_with_excel_report(menu_frame):
     entry_frame.pack(pady=10)
     xml_path_entry = tk.Entry(entry_frame, width=50)  # Entry widget to input XML file path
     xml_path_entry.pack(side='left')
-    browse_button = tk.Button(entry_frame, text="Browse", command=lambda: select_xml_file(xml_path_entry),
+    browse_button = tk.Button(entry_frame, text="Browse", command=lambda: DialogBoxes.xml_selection(xml_path_entry,
+                                                                                                    "Select XML File"),
                               background="black",
                               foreground="white")
     browse_button.pack(side='left', padx=5)
