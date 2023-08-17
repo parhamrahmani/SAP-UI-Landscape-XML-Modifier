@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from ttkwidgets.autocomplete import AutocompleteEntry
+from tkinter import ttk
 from src.utils.xml_utils import list_system_ids_for_group_server_connection_entry, \
     find_message_server_based_on_system_id, \
     get_all_routers, get_all_urls, get_all_custom_sap_gui_info, \
