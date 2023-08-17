@@ -1,10 +1,11 @@
 
 import tkinter as tk
-from src.ui.add_system_window import add_system_window
-from src.ui.export_excel_window import export_excel_window
-from src.ui.remove_duplications_window import remove_duplications_window
-from src.ui.remove_system_window import remove_system_window
-from src.ui.show_stats_window import show_stats_window
+from src.ui.system_addition.adding_system_initial_tab import AddingSystemInitialWindow
+
+from src.ui.excel_export.export_excel_window import export_excel_window
+from src.ui.duplication_removal.remove_duplications_window import remove_duplications_window
+from src.ui.system_removal.removing_system_initial_tab import remove_system_window
+from src.ui.statpad.show_stats_window import show_stats_window
 from src.ui.ui_utils import clear_frame, customize_button, restart_program, show_red_warning
 
 
@@ -28,7 +29,7 @@ def create_main_menu_buttons(menu_frame):
         foreground="white",
         width=BUTTON_WIDTH,
         height=BUTTON_HEIGHT,
-        command=lambda: add_system_window(menu_frame)  # replace with your function
+        command=lambda: AddingSystemInitialWindow.add_system_window(menu_frame)  # replace with your function
     )
     customize_button(add_system_button)
     add_system_button.pack(pady=10, fill='both')
@@ -45,7 +46,7 @@ def create_main_menu_buttons(menu_frame):
     customize_button(remove_system_button)
     remove_system_button.pack(pady=10, fill='both')
 
-    from src.ui.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
+    from src.ui.uuid_regen.regenerate_uuids_with_excel_report import regenerate_uuids_with_excel_report
     regenerate_uuids_button = tk.Button(
         master=menu_frame,
         text="Regenerate UUIDs and export Excel Reports",
