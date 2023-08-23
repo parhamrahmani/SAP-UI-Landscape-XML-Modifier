@@ -3,8 +3,9 @@ import tkinter as tk
 from tkinter import messagebox
 
 from src.ui.system_addition.adding_system_final_tab import system_adding_tab
+from src.ui.system_modification.modifying_system_final_tab import system_modification_tab
 from src.ui.system_removal.removing_system_final_tab import system_removal_tab
-from src.utils.xml_utils import find_custom_system, find_group_server_connections, find_fiori_nwbc_system
+from src.utils.xml_utils.xml_query import XMLQuery
 
 
 def radio_buttons_creation(frame, font, variable, texts):
@@ -32,9 +33,9 @@ def get_custom_sap_system(frame, source_xml_path, server_address_entry, sys_id_e
     exception details.
     """
     try:
-        sap_system = find_custom_system(source_xml_path,
-                                        server_address_entry,
-                                        sys_id_entry)
+        sap_system = XMLQuery.find_custom_system(source_xml_path,
+                                                 server_address_entry,
+                                                 sys_id_entry)
         if task == "addition":
 
             if sap_system is not None:
@@ -63,7 +64,18 @@ def get_custom_sap_system(frame, source_xml_path, server_address_entry, sys_id_e
                 if messagebox.askyesno(dialog_title, dialog_text):
                     system_removal_tab(frame, sap_system, source_xml_path)
                     pass
+        elif task == "modification":
+            if sap_system is not None:
+                system_info = f"Description: {sap_system.get('name')}\n\n" \
+                              f"Server Address: {sap_system.get('server')}\n\n" \
+                              f"System ID: {sap_system.get('systemid')}\n\n"
 
+                dialog_text = f"Is this the SAP System you want to modify?\n\n{system_info}"
+                dialog_title = "Confirm System Details"
+
+                if messagebox.askyesno(dialog_title, dialog_text):
+                    system_modification_tab(frame, sap_system, source_xml_path)
+                    pass
             else:
                 messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
 
@@ -72,52 +84,10 @@ def get_custom_sap_system(frame, source_xml_path, server_address_entry, sys_id_e
         logging.error(f"Error in get_custom_sap_system(): {str(e)}")
 
 
-def get_group_server_system(frame, source_xml_path, system_id_combobox, message_server_entry, sap_router_combobox,
-                            destination_xml_path, task):
-    try:
-        sap_system, message_server, router = find_group_server_connections(source_xml_path,
-                                                                           system_id_combobox,
-                                                                           message_server_entry,
-                                                                           sap_router_combobox)
-        if task == "addition":
-            if sap_system is not None:
-                system_info = f"Description: {sap_system.get('name')}\n\n" \
-                              f"System ID: {sap_system.get('systemid')}\n\n" \
-                              f"Message Server Host: {message_server}\n\n" \
-                              f"SAPRouter: {router}\n\n"
-                dialog_text = f"Is this the SAP System you want to add?\n\n{system_info}"
-                dialog_title = "Confirm System Details"
-
-                if messagebox.askyesno(dialog_title, dialog_text):
-                    system_adding_tab(frame, sap_system, source_xml_path, destination_xml_path)
-
-            else:
-                messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
-        elif task == "removal":
-            if sap_system is not None:
-                system_info = f"Description: {sap_system.get('name')}\n\n" \
-                              f"System ID: {sap_system.get('systemid')}\n\n" \
-                              f"Message Server Host: {message_server}\n\n" \
-                              f"SAPRouter: {router}\n\n"
-                dialog_text = f"Is this the SAP System you want to remove?\n\n{system_info}"
-                dialog_title = "Confirm System Details"
-
-                if messagebox.askyesno(dialog_title, dialog_text):
-                    system_removal_tab(frame, sap_system, source_xml_path)
-
-
-            else:
-                messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
-
-    except Exception as e:
-        messagebox.showwarning("Error in get_group_server_system():", str(e))
-        logging.error(f"Error in get_group_server_system(): {str(e)}")
-
-
 def get_fnwbc_system(frame, source_xml_path, fiori_nwbc_urls_entry,
                      destination_xml_path, task):
     try:
-        sap_system = find_fiori_nwbc_system(source_xml_path, fiori_nwbc_urls_entry)
+        sap_system = XMLQuery.find_fiori_nwbc_system(source_xml_path, fiori_nwbc_urls_entry)
         if task == "addition":
             if sap_system is not None:
                 system_info = f"Description: {sap_system.get('name')}\n\n" \
@@ -139,6 +109,17 @@ def get_fnwbc_system(frame, source_xml_path, fiori_nwbc_urls_entry,
                 if messagebox.askyesno(dialog_title, dialog_text):
                     system_removal_tab(frame, sap_system, source_xml_path)
                     pass
+        elif task == "modification":
+            if sap_system is not None:
+                system_info = f"Description: {sap_system.get('name')}\n\n" \
+                              f"URL: {sap_system.get('url')}\n\n"
+                dialog_text = f"Is this the SAP System you want to modify?\n\n{system_info}"
+                dialog_title = "Confirm System Details"
+
+                if messagebox.askyesno(dialog_title, dialog_text):
+                    system_modification_tab(frame, sap_system, source_xml_path)
+                    pass
+
             else:
                 messagebox.showinfo("No matching system found", "Please check your inputs and try again.")
     except Exception as e:

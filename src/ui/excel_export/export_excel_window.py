@@ -1,9 +1,8 @@
 import tkinter as tk
 
-from src.ui.dialog_boxes import DialogBoxes
-from src.ui.ui_utils import clear_frame, show_red_warning, create_exit_restart_back_buttons
-from src.utils.excel_utils import export_excel
-
+from src.ui.ui_components.dialog_boxes import DialogBoxes
+from src.ui.ui_components.ui_utils import UiUtils
+from src.utils.excel_utils.excel_utils import export_excel
 
 
 def export_excel_window(menu_frame):
@@ -15,7 +14,7 @@ def export_excel_window(menu_frame):
            """
 
     # Clear the main window
-    clear_frame(menu_frame)
+    UiUtils.clear_frame(menu_frame)
 
     description_label = tk.Label(
         menu_frame,
@@ -29,7 +28,7 @@ def export_excel_window(menu_frame):
         justify='left'
     )
     description_label.pack(pady=10)
-    show_red_warning(menu_frame)
+    UiUtils.show_red_warning(menu_frame)
 
     file_label = tk.Label(menu_frame, text="\n\nPlease enter your local XML file",
                           font=("Arial", 10, "bold"),
@@ -40,7 +39,7 @@ def export_excel_window(menu_frame):
     xml_path_entry = tk.Entry(entry_frame, width=50)  # Entry widget to input XML file path
     xml_path_entry.pack(side='left')
     browse_button = tk.Button(entry_frame, text="Browse", command=lambda: DialogBoxes.xml_selection(xml_path_entry,
-                                                                                        "Select XML File"),
+                                                                                                    "Select XML File"),
                               background="black",
                               foreground="white")
     browse_button.pack(side='left', padx=5)
@@ -48,5 +47,4 @@ def export_excel_window(menu_frame):
                               background="black", foreground="white")
     export_button.pack(side="left", pady=5)
 
-    create_exit_restart_back_buttons(menu_frame)
-
+    UiUtils.create_exit_restart_back_buttons(menu_frame)

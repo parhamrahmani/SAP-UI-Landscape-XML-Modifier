@@ -1,8 +1,8 @@
 import tkinter as tk
 
-from src.ui.dialog_boxes import DialogBoxes
-from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons, show_red_warning
-from src.utils.xml_utils import regenerate_uuids_export_excel
+from src.ui.ui_components.dialog_boxes import DialogBoxes
+from src.ui.ui_components.ui_utils import UiUtils
+from src.utils.xml_utils.uuid_regen_utils import UUIDRegenUtils
 
 
 def regenerate_uuids_with_excel_report(menu_frame):
@@ -16,7 +16,7 @@ def regenerate_uuids_with_excel_report(menu_frame):
         """
 
     # Clear the main window
-    clear_frame(menu_frame)
+    UiUtils.clear_frame(menu_frame)
 
     description_label = tk.Label(
         menu_frame,
@@ -34,7 +34,7 @@ def regenerate_uuids_with_excel_report(menu_frame):
     )
     description_label.pack(pady=10)
 
-    show_red_warning(menu_frame)
+    UiUtils.show_red_warning(menu_frame)
 
     file_label = tk.Label(menu_frame, text="\n\nPlease enter your local XML file",
                           font=("Arial", 10, "bold"),
@@ -51,9 +51,9 @@ def regenerate_uuids_with_excel_report(menu_frame):
     browse_button.pack(side='left', padx=5)
 
     regenerate_uuids_button = tk.Button(entry_frame, text="Submit",
-                                        command=lambda: regenerate_uuids_export_excel(xml_path_entry.get()),
+                                        command=lambda: UUIDRegenUtils.regenerate_uuids_export_excel(xml_path_entry.get()),
                                         background="black", foreground="white")
 
     regenerate_uuids_button.pack(side="left", pady=5)
 
-    create_exit_restart_back_buttons(menu_frame)
+    UiUtils.create_exit_restart_back_buttons(menu_frame)

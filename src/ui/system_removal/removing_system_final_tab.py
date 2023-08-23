@@ -1,14 +1,15 @@
 from tkinter import messagebox
 
-from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons
+from src.ui.ui_components.ui_utils import UiUtils
 import tkinter as tk
 import xml.etree.ElementTree as ET
 
-from src.utils.xml_utils import find_router, find_message_server, remove_a_system
+from src.utils.xml_utils.system_removal_utils import SystemRemoval
+from src.utils.xml_utils.xml_query import XMLQuery
 
 
 def system_removal_tab(frame, sap_system, xml_path):
-    clear_frame(frame)
+    UiUtils.clear_frame(frame)
 
     system_to_add = sap_system
     router_bool = sap_system.get('routerid') is not None
@@ -19,9 +20,9 @@ def system_removal_tab(frame, sap_system, xml_path):
     tab_frame = tk.Frame(frame, bg='white')
     tab_frame.pack(pady=10)
 
-    router = find_router(xml_path, sap_system.get('routerid')) if router_bool else None
+    router = XMLQuery.find_router(xml_path, sap_system.get('routerid')) if router_bool else None
     router_address = router.get('name') if router is not None else None
-    message_server = find_message_server(xml_path,
+    message_server = XMLQuery.find_message_server(xml_path,
                                          sap_system.get('msid')) if message_server_bool else None
     message_server_address = message_server.get('host') if message_server is not None else None
 
@@ -49,22 +50,22 @@ def system_removal_tab(frame, sap_system, xml_path):
         submit_button = tk.Button(tab_frame, text="Remove the system", font=("Arial", 12, "bold"),
                                   fg="white",
                                   bg="black", padx=10, pady=3,
-                                  command=lambda: remove_a_system(xml_path, sap_system_str))
+                                  command=lambda: SystemRemoval.remove_a_system(xml_path, sap_system_str))
         submit_button.grid(row=len(label_info) + 3, column=0, columnspan=2, pady=10)
     elif message_server_bool and sap_system.get('server') is not None and sap_system.get(
             'systemid') is not None:
         submit_button = tk.Button(tab_frame, text="Remove the system", font=("Arial", 12, "bold"),
                                   fg="white",
                                   bg="black", padx=10, pady=3,
-                                  command=lambda: remove_a_system(xml_path, sap_system_str))
+                                  command=lambda: SystemRemoval.remove_a_system(xml_path, sap_system_str))
         submit_button.grid(row=len(label_info) + 3, column=0, columnspan=2, pady=10)
     elif url_bool:
         submit_button = tk.Button(tab_frame, text="Remove the system", font=("Arial", 12, "bold"),
                                   fg="white",
                                   bg="black", padx=10, pady=3,
-                                  command=lambda: remove_a_system(xml_path, sap_system_str))
+                                  command=lambda: SystemRemoval.remove_a_system(xml_path, sap_system_str))
         submit_button.grid(row=len(label_info) + 3, column=0, columnspan=2, pady=10)
     else:
         messagebox.showwarning("Error", "The system you are trying to remove is not supported. ")
 
-    create_exit_restart_back_buttons(frame)
+    UiUtils.create_exit_restart_back_buttons(frame)

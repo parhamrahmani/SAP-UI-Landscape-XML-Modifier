@@ -1,8 +1,8 @@
 import tkinter as tk
 
-from src.ui.dialog_boxes import DialogBoxes
-from src.ui.ui_utils import show_red_warning, clear_frame, create_exit_restart_back_buttons
-from src.utils.xml_utils import remove_duplicates
+from src.ui.ui_components.dialog_boxes import DialogBoxes
+from src.ui.ui_components.ui_utils import UiUtils
+from src.utils.xml_utils.system_removal_utils import SystemRemoval
 
 
 def remove_duplications_window(menu_frame):
@@ -17,7 +17,7 @@ def remove_duplications_window(menu_frame):
        """
     # Clear the main window
 
-    clear_frame(menu_frame)
+    UiUtils.clear_frame(menu_frame)
 
     description_label = tk.Label(
         menu_frame,
@@ -34,7 +34,7 @@ def remove_duplications_window(menu_frame):
     )
     description_label.pack(pady=10)
 
-    show_red_warning(menu_frame)
+    UiUtils.show_red_warning(menu_frame)
     file_label = tk.Label(menu_frame, text="\n\nPlease enter your local XML file",
                           font=("Arial", 10, "bold"),
                           bg="white")
@@ -50,9 +50,9 @@ def remove_duplications_window(menu_frame):
     browse_button.pack(side='left', padx=5)
 
     remove_duplications_button = tk.Button(entry_frame, text="Submit",
-                                           command=lambda: remove_duplicates(xml_path_entry.get()),
+                                           command=lambda: SystemRemoval.remove_duplicates(xml_path_entry.get()),
                                            background="black",
                                            foreground="white")
     remove_duplications_button.pack(side='left', padx=5)
 
-    create_exit_restart_back_buttons(menu_frame)
+    UiUtils.create_exit_restart_back_buttons(menu_frame)
