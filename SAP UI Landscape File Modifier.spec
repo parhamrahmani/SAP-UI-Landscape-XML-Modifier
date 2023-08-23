@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['SAP UI Landscape File Modifier.py'],
+    ['C:\\Users\\PR106797\\PycharmProjects\\uuid_manipulator\\SAP UI Landscape File Modifier.py'],
     pathex=[],
     binaries=[],
     datas=[],

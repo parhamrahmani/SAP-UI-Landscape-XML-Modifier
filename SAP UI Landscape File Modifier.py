@@ -3,28 +3,9 @@ import tkinter as tk
 
 from tests.maintest import TestScriptExecution
 from tests.xmlutilstests import XmlUtilsTests
-from src.ui import menu
-
-
-def run_tests():
-    # Create a test loader
-    test_loader = unittest.TestLoader()
-
-    # Load test cases from the test classes
-    test_suite = unittest.TestSuite([
-        test_loader.loadTestsFromTestCase(TestScriptExecution),
-        test_loader.loadTestsFromTestCase(XmlUtilsTests),
-    ])
-
-    # Run the test suite
-    test_runner = unittest.TextTestRunner()
-    test_runner.run(test_suite)
-
+from src.ui.ui_components import menu
 
 if __name__ == "__main__":
-    # Run all tests
-    run_tests()
-
     # Create the GUI window
     root_tk = tk.Tk()
     root_tk.geometry("600x650")
