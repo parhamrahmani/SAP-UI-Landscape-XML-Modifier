@@ -1,0 +1,12 @@
+ 
+        <Landscape version="1" updated="2023-07-26T14:14:41" origin="" generator="RSLSMT">
+         <Services> 
+        <Service uuid="41f6868e-a9ec-4904-bf24-62bd0f1929e0" name="After Test"
+        server="test.sap.shcdc.de:3200" type="SAPGUI" sncop="-1" mode="1" systemid="MK6 After Test"
+        routerid="b893ec1d-66dc-46d1-8230-4de8bb78518f" dcpg="2" sapcpg="1100"/>
+        </Services>
+    <Routers>
+        <Router name="/H/sr1.shcdc.eu" uuid="40c0cde5-3562-46d1-9464-98ec85a96f13" router="/H/sr1.shcdc.eu" 
+        description="/H/sr1.shcdc.eu"/> 
+        </Routers> 
+   </Landscape>
