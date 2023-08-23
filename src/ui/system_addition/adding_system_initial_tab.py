@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from src.ui.connection_selection import radio_buttons_creation, get_custom_sap_system, get_group_server_system, \
+from src.ui.ui_components.connection_selection import radio_buttons_creation, get_custom_sap_system, \
     get_fnwbc_system
-from src.ui.forms import create_custom_system_form, create_fiori_nwbc_form, create_group_server_form
-from src.ui.ui_utils import clear_frame, create_exit_restart_back_buttons, restart_program
-from src.ui.dialog_boxes import DialogBoxes
+from src.ui.ui_components.forms import create_custom_system_form, create_fiori_nwbc_form
+from src.ui.ui_components.ui_utils import UiUtils
+from src.ui.ui_components.dialog_boxes import DialogBoxes
 
 DEFAULT_FONT_BOLD = ("Arial", 8, "bold")
 
@@ -23,7 +23,7 @@ class AddingSystemInitialWindow:
         if not source_xml_path.endswith('.xml') or not destination_xml_path.endswith('.xml'):
             messagebox.showwarning("Invalid File Warning", "Please enter valid XML file paths.")
         else:
-            clear_frame(menu_frame)  # Clear the menu_frame
+            UiUtils.clear_frame(menu_frame)  # Clear the menu_frame
 
             # create a label for selecting connection type
             connection_type_label = tk.Label(menu_frame, text=f"Please select connection type: ",
@@ -36,16 +36,13 @@ class AddingSystemInitialWindow:
             radio_button_frame = tk.Frame(menu_frame, bg="white")
             radio_button_frame.pack(pady=5, anchor='center')
 
-            texts = ["1. Custom Application Server", "2. Group/Server Selection", "3. FIORI/NWBC System"]
+            texts = ["1. Custom Application Server", "2. FIORI/NWBC System"]
 
             radio_buttons_creation(radio_button_frame, DEFAULT_FONT_BOLD, connection_type, texts)
 
             server_address_entry, names_entry, sys_id_entry, custom_system_form_frame = create_custom_system_form(
                 source_xml_path,
                 menu_frame)
-            system_id_combobox, message_server_entry, sap_router_combobox, group_server_form_frame = \
-                create_group_server_form(
-                    source_xml_path, menu_frame)
             fiori_nwbc_name, fiori_nwbc_urls, fiori_nwbc_frame = create_fiori_nwbc_form(source_xml_path, menu_frame)
 
             # Configuring the column's weight to ensure they take up the full space
@@ -61,12 +58,8 @@ class AddingSystemInitialWindow:
                  destination_xml_path,
                  "addition"),
                                            width=40, height=2)
-            next_button_custom.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky='we')
-            # The command associated with this button is determined by def on_connection_type_change(*args)
-            next_button_gsc = tk.Button(group_server_form_frame, text="Find SAP System", background="black",
-                                        foreground="white",
-                                        width=40, height=2)
-            next_button_gsc.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky='we')
+            next_button_custom.grid(row=6, column=0, columnspan=2, padx=5, pady=5, sticky='we')
+
             # The command associated with this button is determined by def on_connection_type_change(*args)
             next_button_fnwbc = tk.Button(fiori_nwbc_frame, text="Find SAP System", background="black",
                                           foreground="white",
@@ -75,13 +68,11 @@ class AddingSystemInitialWindow:
 
             # Initially hide the form
             custom_system_form_frame.pack()
-            group_server_form_frame.pack_forget()
             fiori_nwbc_frame.pack_forget()
 
             def on_connection_type_change(*args):
                 if connection_type.get() == 0:
                     custom_system_form_frame.pack()  # Show the custom system form
-                    group_server_form_frame.pack_forget()  # Hide the group server form
                     fiori_nwbc_frame.pack_forget()
 
                     next_button_custom.config(command=lambda: get_custom_sap_system(menu_frame, source_xml_path,
@@ -90,19 +81,7 @@ class AddingSystemInitialWindow:
                                                                                     , destination_xml_path, "addition"))
 
                 elif connection_type.get() == 1:
-                    custom_system_form_frame.pack_forget()  # Hide the custom system form
-                    fiori_nwbc_frame.pack_forget()
-
-                    group_server_form_frame.pack()  # Show the group server form
-                    next_button_gsc.config(command=lambda: get_group_server_system(menu_frame, source_xml_path,
-                                                                                   system_id_combobox.get(),
-                                                                                   message_server_entry.get(),
-                                                                                   sap_router_combobox.get(),
-                                                                                   destination_xml_path
-                                                                                   , "addition"))
-                elif connection_type.get() == 2:
                     custom_system_form_frame.pack_forget()
-                    group_server_form_frame.pack_forget()
                     fiori_nwbc_frame.pack()
 
                     next_button_fnwbc.config(command=lambda: get_fnwbc_system(menu_frame,
@@ -125,7 +104,7 @@ class AddingSystemInitialWindow:
                 foreground="white",
                 width=25,
                 height=2,
-                command=lambda: restart_program()
+                command=lambda: UiUtils.restart_program()
             )
             back_button.pack(side='right', anchor='se', padx=5, pady=5)
 
@@ -143,7 +122,7 @@ class AddingSystemInitialWindow:
                                          foreground="white",
                                          width=25,
                                          height=2,
-                                         # command=lambda: AddingSystemInitialWindow.add_system_window(menu_frame),
+                                         command=lambda: AddingSystemInitialWindow.add_system_window(menu_frame),
                                          )
             main_menu_button.pack(side='right', anchor='se', padx=5, pady=5)
 
@@ -153,7 +132,7 @@ class AddingSystemInitialWindow:
     @staticmethod
     def add_system_window(menu_frame):
         # Clear the main window
-        clear_frame(menu_frame)
+        UiUtils.clear_frame(menu_frame)
 
         description_label = tk.Label(
             menu_frame,
@@ -168,9 +147,8 @@ class AddingSystemInitialWindow:
             justify='left'
         )
         description_label.pack(pady=10)
-        from src.ui.menu import show_red_warning
 
-        show_red_warning(menu_frame)
+        UiUtils.show_red_warning(menu_frame)
 
         file_label = tk.Label(menu_frame, text="\n\nPlease put the address of your source XML file",
                               font=("Arial", 10, "bold"),
@@ -207,4 +185,4 @@ class AddingSystemInitialWindow:
                                                                                           xml_path_entry2, menu_frame))
         next_button.pack(pady=10)
 
-        create_exit_restart_back_buttons(menu_frame)
+        UiUtils.create_exit_restart_back_buttons(menu_frame)
