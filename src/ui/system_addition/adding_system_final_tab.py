@@ -41,7 +41,7 @@ def system_adding_tab(frame, sap_system, source_xml_path, destination_xml_path):
     router = XMLQuery.find_router(source_xml_path, sap_system.get('routerid')) if router_bool else None
     router_address = router.get('name') if router is not None else None
     message_server = XMLQuery.find_message_server(source_xml_path,
-                                         sap_system.get('msid')) if message_server_bool else None
+                                                  sap_system.get('msid')) if message_server_bool else None
     message_server_address = message_server.get('host') if message_server is not None else None
 
     label_info = [("Selected SAP System: ", system_to_add.get('name'))]
@@ -75,7 +75,7 @@ def system_adding_tab(frame, sap_system, source_xml_path, destination_xml_path):
     new_name_entry_label.grid(row=len(label_info) + 1, column=0, sticky='w')
     name_options = [system_to_add.get('name')]
     new_name_combobox = ttk.Combobox(tab_frame, textvariable=new_name, values=name_options,
-                                     state='normal')
+                                     state='normal', width=40)
     new_name_combobox.grid(row=len(label_info) + 1, column=1, sticky='w')
     new_name_combobox.current(0)
 
@@ -91,17 +91,22 @@ def system_adding_tab(frame, sap_system, source_xml_path, destination_xml_path):
     workspace_label.grid(row=len(label_info) + 3, column=0, sticky='w')
 
     workspace_options = [ws.get('name') for ws in workspaces]
-    workspace_combobox = ttk.Combobox(tab_frame, textvariable=selected_workspace, values=workspace_options,
-                                      state='normal')  # Change state to 'normal'
-    workspace_combobox.grid(row=len(label_info) + 3, column=1, sticky='w')
-    workspace_combobox.current(0)
+    if len(workspace_options) != 0:
+        workspace_combobox = ttk.Combobox(tab_frame, textvariable=selected_workspace, values=workspace_options,
+                                          state='normal', width=40)  # Change state to 'normal'
+        workspace_combobox.grid(row=len(label_info) + 3, column=1, sticky='w')
+        workspace_combobox.current(0)
+    else:
+        workspace_combobox = ttk.Combobox(tab_frame, textvariable=selected_workspace, values=workspace_options,
+                                          state='normal', width=40)
+        workspace_combobox.grid(row=len(label_info) + 3, column=1, sticky='w')
 
     # Create a label and dropdown menu for the nodes
     node_label = tk.Label(tab_frame, text="Node: ", font=("Arial", 10, "bold"), fg="black", bg="white")
     node_label.grid(row=len(label_info) + 4, column=0, sticky='w')
 
     node_combobox = ttk.Combobox(tab_frame, textvariable=selected_node, values=[],
-                                 state='normal')  # Change state to 'normal'
+                                 state='normal', width=40)
     node_combobox.grid(row=len(label_info) + 4, column=1, sticky='w')
 
     def update_nodes(*args):
