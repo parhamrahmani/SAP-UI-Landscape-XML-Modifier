@@ -95,10 +95,12 @@ class XMLQuery:
             root = tree.getroot()
             if root.tag != "Landscape":
                 messagebox.showwarning("Error in XML structure:",
-                                       "The root tag of the XML file should be <Landscape>. Please correct your XML file "
+                                       "The root tag of the XML file should be <Landscape>. Please correct your XML "
+                                       "file"
                                        "and try again."
                                        "\n\nThe XML file must be a SAP Landscape File!\n"
-                                       "If your destination file is an empty XML file, please edit the xml file and add\n "
+                                       "If your destination file is an empty XML file, please edit the xml file and "
+                                       "add\n"
                                        "<Landscape> </Landscape> to it!\n")
                 return None
             workspaces = root.findall(".//Workspace")

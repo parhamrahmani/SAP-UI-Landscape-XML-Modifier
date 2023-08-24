@@ -77,6 +77,7 @@ def system_adding_tab(frame, sap_system, source_xml_path, destination_xml_path):
     new_name_combobox = ttk.Combobox(tab_frame, textvariable=new_name, values=name_options,
                                      state='normal')
     new_name_combobox.grid(row=len(label_info) + 1, column=1, sticky='w')
+    new_name_combobox.current(0)
 
     # Create a label for source file
     tab_label = tk.Label(tab_frame,
