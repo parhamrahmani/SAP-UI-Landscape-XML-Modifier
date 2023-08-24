@@ -27,7 +27,7 @@ class SystemModification:
                                                        "\n System Info: \n\n"
                                                        f"System Name: {fetched_system.get('name')}\n"
                                                        f"SID: {fetched_system.get('systemid')}\n"
-                                                       f"Server: {fetched_system.get('url')}\n\n"
+                                                       f"Server: {fetched_system.get('server')}\n\n"
                                                        f"Output file saved at: " + xml_path)
                     else:
                         messagebox.showinfo("Error", "System not found")
