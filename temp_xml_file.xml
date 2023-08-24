@@ -32,7 +32,7 @@ dcpg="2" sapcpg="1100"/>
 server="test.sap.shcdc.de:3200" type="SAPGUI" sncop="-1" mode="1" systemid="MK6" 
 routerid="b893ec1d-66dc-46d1-8230-4de8bb78518f" dcpg="2" sapcpg="1100"/>
 
- <Service uuid="fe04fb06-8aa4-4229-b6e6-a0f77eb5dade" name="Brandenburg Klinikum BRE" server="10.1.101.82:3200"
+ <Service uuid="fe04fb06-8aa4-4229-b6e6-a0f77eb5dade" name="TEST BRE" server="55.5.555.55:3200"
   type="SAPGUI" sncop="-1" mode="1" systemid="BRE" routerid="205dd6c6-5ef5-4da4-940f-ddd740c3035c" 
   dcpg="2" sapcpg="1100"/>
   
@@ -55,13 +55,13 @@ description="SAP Reserved"/>
 </Includes>
  
  <Routers>
-<Router name="/H/sr1.shcdc.eu" uuid="40c0cde5-3562-46d1-9464-98ec85a96f13" router="/H/sr1.shcdc.eu" 
+<Router name="/H/test.shcdc.eu" uuid="40c0cde5-3562-46d1-9464-98ec85a96f13" router="/H/sr1.shcdc.eu" 
 description="/H/sr1.shcdc.eu"/> 
 </Routers> 
 
 <Messageservers>
  <Messageserver name="P20" uuid="668e74b2-2915-4500-a557-1743a37b5d96" 
-host="sapp20ms.sapms.fresenius.de" port="3601"/> 
+host="sapp20ms.sapms.test.de" port="3601"/> 
 </Messageservers> 
 
 </Landscape>
