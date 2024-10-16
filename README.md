@@ -115,6 +115,7 @@ use this programme on a copy of your original XML file. Always create a backup o
 - Restart your SAP Logon or SAP Business Client software to see the changes.
 
 **Note: You can basically move any SAP system information/configuration between xml config files with this. Just choose the source and destination file correctly**
+
 **Note 2: Make suer your xml file exactly has the information like server address, etc. This tool doesn't find 'favourite' enteries, since they are only links to other services and don't have information on them**
 
 #### Removing a System from the Central File
